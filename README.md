@@ -1,11 +1,23 @@
-Wate is a control-flow library for JavaScript based on callbacks. Rather than
-using heavyweight Promise-based libraries that swallow errors and lose stack
-traces in production, use Wate to manage regular callbacks inside of
-lightweight Futures.
+```
+                           /$$
+                          | $$
+ /$$  /$$  /$$  /$$$$$$  /$$$$$$    /$$$$$$
+| $$ | $$ | $$ |____  $$|_  $$_/   /$$__  $$
+| $$ | $$ | $$  /$$$$$$$  | $$    | $$$$$$$$
+| $$ | $$ | $$ /$$__  $$  | $$ /$$| $$_____/
+|  $$$$$/$$$$/|  $$$$$$$  |  $$$$/|  $$$$$$$
+ \_____/\___/  \_______/   \___/   \_______/
+```
 
-Wate interops with most Promise-based libraries, if you use them, by exposing a
-Promises/A compatible wrapper. It integrates with typical error-first Node
-functions by virtue of being built explicitly for them.
+Wate is a small, fast, full-featured, easy-to-debug control flow library for
+JavaScript and TypeScript. Rather than using Promise-based libraries that
+swallow errors and lose stack traces in production, use Wate to manage
+callbacks inside of lightweight Futures.
+
+Wate interops with most Promise-based libraries, if you use them, by exposing
+functions that can convert to and from Promises and Futures. It integrates with
+typical error-first Node functions by virtue of being built explicitly for
+them.
 
 
 API
