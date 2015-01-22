@@ -14,6 +14,10 @@ export interface Thenable<E, V, Er, Vr> {
   then: (callback: (v: V) => Vr, errback: (e: E) => Er) => any;
 }
 
+export interface Transform<I, O> {
+  (val: I): O;
+}
+
 export function make<E, V>(builder: BuilderFunction<E, V>): Future<E, V> {
   var deferred = new Deferred<E, V>();
   builder(deferred.cb);
@@ -33,6 +37,32 @@ export function fromPromise<E, V>(promise: Thenable<E, V, any, any>): Future<E, 
 export function toPromise<E, V>(future: Future<E, V>): Thenable<E, V, any, any> {
   return new Promise(future);
 }
+
+export function bindValue<E, V, OutV>(future: Future<E, V>, transform: Transform<V, OutV>): Future<E, OutV> {
+  return make((cb: Callback<E, OutV>) => {
+    future.done((err: E, val: V) => {
+      var transformed: OutV;
+      if(!err) transformed = transform(val);
+      cb(err, transformed);
+    });
+  });
+}
+
+export var bind = bindValue;
+export var transform = bind;
+export var transformValue = transform;
+
+export function bindError<E, V, OutE>(future: Future<E, V>, transform: Transform<E, OutE>): Future<OutE, V> {
+  return make((cb: Callback<OutE, V>) => {
+    future.done((err: E, val: V) => {
+      var transformed: OutE;
+      if(err) transformed = transform(err);
+      cb(transformed, val);
+    });
+  });
+}
+
+export var transformError = bindError;
 
 export function all<E,V>(futures: Array<Future<E, V>>): Future<E, V[]> {
   return make((cb: Callback<E, V[]>) => {

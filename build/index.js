@@ -23,6 +23,32 @@ function toPromise(future) {
     return new Promise(future);
 }
 exports.toPromise = toPromise;
+function bindValue(future, transform) {
+    return make(function (cb) {
+        future.done(function (err, val) {
+            var transformed;
+            if (!err)
+                transformed = transform(val);
+            cb(err, transformed);
+        });
+    });
+}
+exports.bindValue = bindValue;
+exports.bind = bindValue;
+exports.transform = exports.bind;
+exports.transformValue = exports.transform;
+function bindError(future, transform) {
+    return make(function (cb) {
+        future.done(function (err, val) {
+            var transformed;
+            if (err)
+                transformed = transform(err);
+            cb(transformed, val);
+        });
+    });
+}
+exports.bindError = bindError;
+exports.transformError = bindError;
 function all(futures) {
     return make(function (cb) {
         run(collectValues, futures, cb);
