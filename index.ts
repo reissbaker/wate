@@ -141,6 +141,10 @@ export function spreadValues<E, V>(future: Future<E, V[]>, cb: (...values: V[]) 
 
 export var spread = spreadValues;
 
+export function spreadAll<E, V>(futures: Array<Future<E, V>>, cb: (...values: V[]) => any): void {
+  spreadValues(all(futures), cb);
+}
+
 export function spreadErrors<E, V>(future: Future<E[], V>, cb: (...errors: E[]) => any): void {
   future.done((errors, val) => {
     if(errors) cb.apply(undefined, errors);

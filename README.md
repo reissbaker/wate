@@ -20,6 +20,30 @@ typical error-first Node functions by virtue of being built explicitly for
 them.
 
 
+Examples
+--------------------------------------------------------------------------------
+
+```javascript
+var fs = require('fs');
+
+function readFile(filename, encoding) {
+  return wate.make(function(callback) {
+    fs.readFile(filename, encoding, callback);
+  });
+}
+
+// Read in parallel
+var proust = readFile('proust.txt', 'utf-8');
+var hemingway = readFile('hemingway.txt', 'utf-8');
+
+// Print the values once they've both loaded
+wate.spreadAll([proust, hemingway], function(proustText, hemingwayText) {
+  console.log('proust said', proustText);
+  console.log('hemingway said', hemingwayText);
+});
+```
+
+
 API
 --------------------------------------------------------------------------------
 

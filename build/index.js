@@ -116,6 +116,10 @@ function spreadValues(future, cb) {
 }
 exports.spreadValues = spreadValues;
 exports.spread = spreadValues;
+function spreadAll(futures, cb) {
+    spreadValues(all(futures), cb);
+}
+exports.spreadAll = spreadAll;
 function spreadErrors(future, cb) {
     future.done(function (errors, val) {
         if (errors)
