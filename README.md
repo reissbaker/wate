@@ -42,7 +42,7 @@ Transform a value as soon as it's loaded:
 var fs = xmlParser = require('xml2json');
 
 // Transform to JSON
-var json = readFile('config.xml', 'utf-8').transform(function(xml) {
+var json = wate.transform(readFile('config.xml', 'utf-8'), function(xml) {
   return xmlParser.toJson(xml);
 });
 
