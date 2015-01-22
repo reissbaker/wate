@@ -1,0 +1,15 @@
+{
+  "name": "wate",
+  "version": "0.0.1",
+  "description": "Wrangle callbacks without Promises.",
+  "main": "build/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "promises",
+    "callbacks"
+  ],
+  "author": "Matt Baker",
+  "license": "ISC"
+}
