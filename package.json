@@ -1,6 +1,6 @@
 {
   "name": "wate",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Wrangle callbacks without Promises.",
   "main": "build/index.js",
   "scripts": {
