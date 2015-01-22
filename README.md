@@ -23,6 +23,8 @@ them.
 Examples
 --------------------------------------------------------------------------------
 
+Wrap a Node function to make it return Futures:
+
 ```javascript
 var fs = require('fs');
 
@@ -31,7 +33,29 @@ function readFile(filename, encoding) {
     fs.readFile(filename, encoding, callback);
   });
 }
+```
 
+
+Transform a value as soon as it's loaded:
+
+```javascript
+var fs = xmlParser = require('xml2json');
+
+// Transform to JSON
+var json = readFile('config.xml', 'utf-8').transform(function(xml) {
+  return xmlParser.toJson(xml);
+});
+
+// Print the JSON
+json.done(function(err, jsonVal) {
+  console.log(jsonVal);
+});
+```
+
+
+Read some files in parallel and print them when you're done:
+
+```javascript
 // Read in parallel
 var proust = readFile('proust.txt', 'utf-8');
 var hemingway = readFile('hemingway.txt', 'utf-8');
