@@ -19,6 +19,17 @@ function fromPromise(promise) {
     });
 }
 exports.fromPromise = fromPromise;
+function fromDOMElement(el) {
+    return make(function (cb) {
+        el.addEventListener('load', function () {
+            cb(null, el);
+        });
+        el.addEventListener('error', function (e) {
+            cb(e);
+        });
+    });
+}
+exports.fromDOMElement = fromDOMElement;
 function toPromise(future) {
     return new Promise(future);
 }

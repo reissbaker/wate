@@ -18,6 +18,10 @@ export interface Transform<I, O> {
   (val: I): O;
 }
 
+export interface DOMEl {
+  addEventListener: (key: string, listener: (v?: any) => any) => any;
+}
+
 export function make<E, V>(builder: BuilderFunction<E, V>): Future<E, V> {
   var deferred = new Deferred<E, V>();
   builder(deferred.cb);
@@ -30,6 +34,17 @@ export function fromPromise<E, V>(promise: Thenable<E, V, any, any>): Future<E, 
       cb(null, val);
     }, (err) => {
       cb(err);
+    });
+  });
+}
+
+export function fromDOMElement<E>(el: DOMEl): Future<E, DOMEl> {
+  return make((cb: Callback<E, DOMEl>) => {
+    el.addEventListener('load', () => {
+      cb(null, el);
+    });
+    el.addEventListener('error', (e: E) => {
+      cb(e);
     });
   });
 }
