@@ -53,7 +53,10 @@ export function toPromise<E, V>(future: Future<E, V>): Thenable<E, V, any, any> 
   return new Promise(future);
 }
 
-export function bindValue<E, V, OutV>(future: Future<E, V>, transform: Transform<V, OutV>): Future<E, OutV> {
+export function bindValue<E, V, OutV>(
+  future: Future<E, V>,
+  transform: Transform<V, OutV>
+): Future<E, OutV> {
   return make((cb: Callback<E, OutV>) => {
     future.done((err: E, val: V) => {
       var transformed: OutV;
@@ -67,7 +70,10 @@ export var bind = bindValue;
 export var transform = bind;
 export var transformValue = transform;
 
-export function bindError<E, V, OutE>(future: Future<E, V>, transform: Transform<E, OutE>): Future<OutE, V> {
+export function bindError<E, V, OutE>(
+  future: Future<E, V>,
+  transform: Transform<E, OutE>
+): Future<OutE, V> {
   return make((cb: Callback<OutE, V>) => {
     future.done((err: E, val: V) => {
       var transformed: OutE;
