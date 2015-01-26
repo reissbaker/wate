@@ -104,6 +104,16 @@ function eachError(futures, cb) {
     }
 }
 exports.eachError = eachError;
+// TODO: use this more internally to reduce code duplication
+function then(future, cb, eb) {
+    return future.done(function (err, val) {
+        if (err && eb)
+            eb(err);
+        else if (!err && cb)
+            cb(val);
+    });
+}
+exports.then = then;
 function all(futures) {
     return make(function (cb) {
         run(collectValues, futures, cb);

@@ -145,6 +145,18 @@ export function eachError<E, V>(futures: Array<Future<E, V>>, cb: (e: E) => any)
   }
 }
 
+// TODO: use this more internally to reduce code duplication
+export function then<E, V>(
+  future: Future<E, V>,
+  cb?: (v: V) => any,
+  eb?: (e: E) => any
+): Future<E, V> {
+  return future.done((err, val) => {
+    if(err && eb) eb(err);
+    else if(!err && cb) cb(val);
+  });
+}
+
 export function all<E,V>(futures: Array<Future<E, V>>): Future<E, V[]> {
   return make((cb: Callback<E, V[]>) => {
     run(collectValues, futures, cb);
