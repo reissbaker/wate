@@ -6,25 +6,33 @@ var Deferred = (function () {
         this.error = null;
         this._settled = false;
         this._cbs = [];
+        this._scheduled = false;
         this.cb = function (err, value) {
             if (_this._settled)
                 throw new Error('Called deferred callback twice.');
             _this.error = err;
             _this.value = value;
             _this._settled = true;
-            for (var i = 0, l = _this._cbs.length; i < l; i++) {
-                _this._cbs[i](err, value);
-            }
+            _this._trigger();
         };
     }
     Deferred.prototype.done = function (callback) {
+        this._cbs.push(callback);
+        if (this._settled)
+            this._trigger();
+    };
+    Deferred.prototype._trigger = function () {
         var _this = this;
-        if (!this._settled)
-            this._cbs.push(callback);
-        else
-            setTimeout(function () {
-                callback(_this.error, _this.value);
-            }, 0);
+        if (this._scheduled)
+            return;
+        this._scheduled = true;
+        process.nextTick(function () {
+            for (var i = 0, l = _this._cbs.length; i < l; i++) {
+                _this._cbs[i](_this.error, _this.value);
+            }
+            _this._cbs = [];
+            _this._scheduled = false;
+        });
     };
     return Deferred;
 })();

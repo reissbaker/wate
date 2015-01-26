@@ -2,6 +2,8 @@
 
 import Callback = require('./callback');
 
+declare var process: { nextTick: (callback: () => any) => void; };
+
 class Deferred<E, V> {
   value: V = null;
   error: E = null;
@@ -9,6 +11,7 @@ class Deferred<E, V> {
 
   private _settled: boolean = false;
   private _cbs: Array<Callback<E, V>> = [];
+  private _scheduled: boolean = false;
 
   constructor() {
     this.cb = (err: E, value: V) => {
@@ -18,18 +21,26 @@ class Deferred<E, V> {
       this.value = value;
       this._settled = true;
 
-      for(var i = 0, l = this._cbs.length; i < l; i++) {
-        this._cbs[i](err, value);
-      }
+      this._trigger();
     };
   }
 
   done(callback: Callback<E, V>) {
-    if(!this._settled) this._cbs.push(callback);
-    // TODO: process.nextTick
-    else setTimeout(() => {
-      callback(this.error, this.value);
-    }, 0);
+    this._cbs.push(callback);
+    if(this._settled) this._trigger();
+  }
+
+  _trigger() {
+    if(this._scheduled) return;
+    this._scheduled = true;
+
+    process.nextTick(() => {
+      for(var i = 0, l = this._cbs.length; i < l; i++) {
+        this._cbs[i](this.error, this.value);
+      }
+      this._cbs = [];
+      this._scheduled = false;
+    });
   }
 }
 
