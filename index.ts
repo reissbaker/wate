@@ -131,6 +131,20 @@ export function flattenErrors<E, V>(futures: Array<Future<E[], V>>): Future<E[],
   return transformError(none(futures), flattenRaw);
 }
 
+export function eachValue<E, V>(futures: Array<Future<E, V>>, cb: (v: V) => any): void {
+  for(var i = 0, l = futures.length; i < l; i++) {
+    valueCallback(futures[i], cb);
+  }
+}
+
+export var each = eachValue;
+
+export function eachError<E, V>(futures: Array<Future<E, V>>, cb: (e: E) => any): void {
+  for(var i = 0, l = futures.length; i < l; i++) {
+    errorCallback(futures[i], cb);
+  }
+}
+
 export function all<E,V>(futures: Array<Future<E, V>>): Future<E, V[]> {
   return make((cb: Callback<E, V[]>) => {
     run(collectValues, futures, cb);
@@ -367,4 +381,16 @@ function mapRawCallback<In, Out>(mapper: Transform<In, Out>): Transform<In[], Ou
     }
     return out;
   };
+}
+
+function valueCallback<V>(future: Future<any, V>, callback: (v: V) => any): void {
+  future.done((err: any, value: V) => {
+    if(!err) callback(value);
+  });
+}
+
+function errorCallback<E>(future: Future<E, any>, callback: (e: E) => any): void {
+  future.done((err: E, value: any) => {
+    if(err) callback(err);
+  });
 }

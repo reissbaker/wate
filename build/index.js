@@ -91,6 +91,19 @@ function flattenErrors(futures) {
     return exports.transformError(none(futures), flattenRaw);
 }
 exports.flattenErrors = flattenErrors;
+function eachValue(futures, cb) {
+    for (var i = 0, l = futures.length; i < l; i++) {
+        valueCallback(futures[i], cb);
+    }
+}
+exports.eachValue = eachValue;
+exports.each = eachValue;
+function eachError(futures, cb) {
+    for (var i = 0, l = futures.length; i < l; i++) {
+        errorCallback(futures[i], cb);
+    }
+}
+exports.eachError = eachError;
 function all(futures) {
     return make(function (cb) {
         run(collectValues, futures, cb);
@@ -281,4 +294,16 @@ function mapRawCallback(mapper) {
         }
         return out;
     };
+}
+function valueCallback(future, callback) {
+    future.done(function (err, value) {
+        if (!err)
+            callback(value);
+    });
+}
+function errorCallback(future, callback) {
+    future.done(function (err, value) {
+        if (err)
+            callback(err);
+    });
 }
