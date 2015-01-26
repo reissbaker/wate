@@ -85,16 +85,36 @@ export function bindError<E, V, OutE>(
 
 export var transformError = bindError;
 
+export function mapValues<E, V, OutV>(
+  futures: Array<Future<E, V>>,
+  mapper: Transform<V, OutV>
+): Future<E, OutV[]> {
+  return make((cb: Callback<E, OutV[]>) => {
+    run(collectMapValues(mapper), futures, cb);
+  });
+}
+
+export var map = mapValues;
+
+export function mapErrors<E, V, OutE>(
+  futures: Array<Future<E, V>>,
+  mapper: Transform<E, OutE>
+): Future<OutE[], V> {
+  return invert(make((cb: Callback<V, OutE[]>) => {
+    run(collectMapErrors(mapper), futures, cb);
+  }));
+}
+
 export function all<E,V>(futures: Array<Future<E, V>>): Future<E, V[]> {
   return make((cb: Callback<E, V[]>) => {
     run(collectValues, futures, cb);
   });
 }
 
-export function none<E, V>(futures: Array<Future<E, V>>): Future<V, E[]> {
-  return make((cb: Callback<V, E[]>) => {
+export function none<E, V>(futures: Array<Future<E, V>>): Future<E[], V> {
+  return invert(make((cb: Callback<V, E[]>) => {
     run(collectErrors, futures, cb);
-  });
+  }));
 }
 
 export function settled<E, V>(futures: Array<Future<E, V>>): Future<any, Array<Result<E, V>>> {
@@ -103,10 +123,7 @@ export function settled<E, V>(futures: Array<Future<E, V>>): Future<any, Array<R
   });
 }
 
-export function firstValue<E, V>(futures: Array<Future<E, V>>): Future<E[], V> {
-  return invert(none(futures));
-}
-
+export var firstValue = none;
 export var first = firstValue;
 
 export function lastValue<E, V>(futures: Array<Future<E, V>>): Future<E[], V> {
@@ -117,14 +134,12 @@ export function lastValue<E, V>(futures: Array<Future<E, V>>): Future<E[], V> {
 
 export var last = lastValue;
 
-export function firstError<E, V>(futures: Array<Future<E, V>>): Future<V[], E> {
-  return invert(all(futures));
-}
+export var firstError = all;
 
-export function lastError<E, V>(futures: Array<Future<E, V>>): Future<V[], E> {
-  return make<V[], E>((cb: Callback<V[], E>) => {
+export function lastError<E, V>(futures: Array<Future<E, V>>): Future<E, V[]> {
+  return invert(make<V[], E>((cb: Callback<V[], E>) => {
     findLast(futures, hasError, getError, getValue, cb);
-  });
+  }));
 }
 
 export function invert<E, V>(future: Future<E, V>): Future<V, E> {

@@ -67,9 +67,9 @@ function all(futures) {
 }
 exports.all = all;
 function none(futures) {
-    return make(function (cb) {
+    return invert(make(function (cb) {
         run(collectErrors, futures, cb);
-    });
+    }));
 }
 exports.none = none;
 function settled(futures) {
@@ -78,11 +78,8 @@ function settled(futures) {
     });
 }
 exports.settled = settled;
-function firstValue(futures) {
-    return invert(none(futures));
-}
-exports.firstValue = firstValue;
-exports.first = firstValue;
+exports.firstValue = none;
+exports.first = exports.firstValue;
 function lastValue(futures) {
     return make(function (cb) {
         findLast(futures, hasValue, getValue, getError, cb);
@@ -90,14 +87,11 @@ function lastValue(futures) {
 }
 exports.lastValue = lastValue;
 exports.last = lastValue;
-function firstError(futures) {
-    return invert(all(futures));
-}
-exports.firstError = firstError;
+exports.firstError = all;
 function lastError(futures) {
-    return make(function (cb) {
+    return invert(make(function (cb) {
         findLast(futures, hasError, getError, getValue, cb);
-    });
+    }));
 }
 exports.lastError = lastError;
 function invert(future) {
