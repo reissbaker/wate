@@ -10,6 +10,10 @@ export interface BuilderFunction<E, V> {
   (callback: Callback<E, V>): any;
 }
 
+export interface DoubledBuilderFn<E, V> {
+  (fullfill: (v: V) => any, reject?: (e: E) => any): any;
+}
+
 export interface Thenable<E, V, Er, Vr> {
   then: (callback: (v: V) => Vr, errback: (e: E) => Er) => any;
 }
@@ -25,6 +29,18 @@ export interface DOMEl {
 export function make<E, V>(builder: BuilderFunction<E, V>): Future<E, V> {
   var deferred = new Deferred<E, V>();
   builder(deferred.cb);
+  return new Future(deferred);
+}
+
+export function create<E, V>(builder: DoubledBuilderFn<E, V>): Future<E, V> {
+  var deferred = new Deferred<E, V>();
+
+  builder((v: V) => {
+    deferred.cb(null, v);
+  }, (e: E) => {
+    deferred.cb(e);
+  });
+
   return new Future(deferred);
 }
 
@@ -57,12 +73,8 @@ export function bindValue<E, V, OutV>(
   future: Future<E, V>,
   transform: Transform<V, OutV>
 ): Future<E, OutV> {
-  return make((cb: Callback<E, OutV>) => {
-    future.done((err: E, val: V) => {
-      var transformed: OutV;
-      if(!err) transformed = transform(val);
-      cb(err, transformed);
-    });
+  return create((fulfill: (v: OutV) => any, reject: (e: E) => any) => {
+    then(future, (v: V) => { fulfill(transform(v)); }, reject);
   });
 }
 
@@ -74,12 +86,8 @@ export function bindError<E, V, OutE>(
   future: Future<E, V>,
   transform: Transform<E, OutE>
 ): Future<OutE, V> {
-  return make((cb: Callback<OutE, V>) => {
-    future.done((err: E, val: V) => {
-      var transformed: OutE;
-      if(err) transformed = transform(err);
-      cb(transformed, val);
-    });
+  return create((fulfill: (v: V) => any, reject: (e: OutE) => any) => {
+    then(future, fulfill, (e: E) => { reject(transform(e)); });
   });
 }
 
@@ -133,7 +141,7 @@ export function flattenErrors<E, V>(futures: Array<Future<E[], V>>): Future<E[],
 
 export function eachValue<E, V>(futures: Array<Future<E, V>>, cb: (v: V) => any): void {
   for(var i = 0, l = futures.length; i < l; i++) {
-    valueCallback(futures[i], cb);
+    then(futures[i], cb);
   }
 }
 
@@ -141,7 +149,7 @@ export var each = eachValue;
 
 export function eachError<E, V>(futures: Array<Future<E, V>>, cb: (e: E) => any): void {
   for(var i = 0, l = futures.length; i < l; i++) {
-    errorCallback(futures[i], cb);
+    then(futures[i], null, cb);
   }
 }
 
@@ -402,16 +410,4 @@ function mapRawCallback<In, Out>(mapper: Transform<In, Out>): Transform<In[], Ou
     }
     return out;
   };
-}
-
-function valueCallback<V>(future: Future<any, V>, callback: (v: V) => any): void {
-  future.done((err: any, value: V) => {
-    if(!err) callback(value);
-  });
-}
-
-function errorCallback<E>(future: Future<E, any>, callback: (e: E) => any): void {
-  future.done((err: E, value: any) => {
-    if(err) callback(err);
-  });
 }

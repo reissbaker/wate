@@ -9,6 +9,16 @@ function make(builder) {
     return new Future(deferred);
 }
 exports.make = make;
+function create(builder) {
+    var deferred = new Deferred();
+    builder(function (v) {
+        deferred.cb(null, v);
+    }, function (e) {
+        deferred.cb(e);
+    });
+    return new Future(deferred);
+}
+exports.create = create;
 function fromPromise(promise) {
     return make(function (cb) {
         promise.then(function (val) {
@@ -35,13 +45,10 @@ function toPromise(future) {
 }
 exports.toPromise = toPromise;
 function bindValue(future, transform) {
-    return make(function (cb) {
-        future.done(function (err, val) {
-            var transformed;
-            if (!err)
-                transformed = transform(val);
-            cb(err, transformed);
-        });
+    return create(function (fulfill, reject) {
+        then(future, function (v) {
+            fulfill(transform(v));
+        }, reject);
     });
 }
 exports.bindValue = bindValue;
@@ -49,12 +56,9 @@ exports.bind = bindValue;
 exports.transform = exports.bind;
 exports.transformValue = exports.transform;
 function bindError(future, transform) {
-    return make(function (cb) {
-        future.done(function (err, val) {
-            var transformed;
-            if (err)
-                transformed = transform(err);
-            cb(transformed, val);
+    return create(function (fulfill, reject) {
+        then(future, fulfill, function (e) {
+            reject(transform(e));
         });
     });
 }
@@ -93,14 +97,14 @@ function flattenErrors(futures) {
 exports.flattenErrors = flattenErrors;
 function eachValue(futures, cb) {
     for (var i = 0, l = futures.length; i < l; i++) {
-        valueCallback(futures[i], cb);
+        then(futures[i], cb);
     }
 }
 exports.eachValue = eachValue;
 exports.each = eachValue;
 function eachError(futures, cb) {
     for (var i = 0, l = futures.length; i < l; i++) {
-        errorCallback(futures[i], cb);
+        then(futures[i], null, cb);
     }
 }
 exports.eachError = eachError;
@@ -304,16 +308,4 @@ function mapRawCallback(mapper) {
         }
         return out;
     };
-}
-function valueCallback(future, callback) {
-    future.done(function (err, value) {
-        if (!err)
-            callback(value);
-    });
-}
-function errorCallback(future, callback) {
-    future.done(function (err, value) {
-        if (err)
-            callback(err);
-    });
 }
