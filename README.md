@@ -91,56 +91,6 @@ fileFuture.done(function(err, text) {
 ```
 
 
-### Creating Futures
-
-#### `wate.make(builder)`
-
-Given a callback of the form `function(callback) {}`, returns a Future that
-resolves to whatever the callback is called with. For example:
-
-```javascript
-var fs = require('fs');
-
-var fileFuture = wate.make(function(callback) {
-  fs.readFile('test.txt', 'utf-8', callback);
-});
-
-fileFuture.done(function(err, text) {
-  if(!err) console.log(text);
-});
-```
-
-
-#### `wate.fromPromise(promise)`
-
-Turns a Promise into a Wate Future. For example:
-
-```javascript
-var future = wate.fromPromise(somePromiseReturningFn());
-future.done(function(err, val) {
-  if(!err) console.log(val);
-});
-```
-
-
-#### `wate.fromDOMElement`
-
-Given a DOM element that emits `'load'` and `'error'` events, returns a future
-that resolves to a null error and the element if it loads, or an error if the
-element fails to load. For example:
-
-```javascript
-var image = new Image();
-image.src = 'test.png';
-var imageFuture = wate.fromDOMElement(image);
-
-// Append the image if it loads
-imageFuture.done(function(err, image) {
-  if(!err) document.body.appendChild(image);
-});
-```
-
-
 
 ### Composing Futures
 
@@ -194,5 +144,192 @@ wate.settled([a, b, c]).done(function(_, results) {
     if(result.error) console.log('error', result.error);
     else console.log('success', result.value);
   });
+});
+```
+
+
+##### `wate.firstValue(futures)`
+
+*alias: `wate.first(futures)`*
+
+Returns a Future that resolves to the first value that any of the given futures
+resolve to, or to an array of all of the errors if none of the futures are
+successful. For example:
+
+```javascript
+wate.firstValue([a, b, c]).done(function(errors, first) {
+  if(!errors) console.log('value of first to finish successfully:', first);
+  else console.log('all futures errored:', errors);
+});
+```
+
+
+#### `wate.firstError(futures)`
+
+Returns a Future that resolves to the first error that any of the given Futures
+error out with, or to an array of all of the values if none of the Futures
+error out. For example:
+
+```javascript
+wate.firstError([a, b, c]).done(function(values, firstError) {
+  if(firstError) console.log('first error', firstError);
+  else console.log('no errors, values were:', values);
+});
+```
+
+
+#### `wate.lastValue(futures)`
+
+*alias: `wate.last(futures)`*
+
+Returns a Future that resolves to the last value that the given Futures resolve
+to, or an array or all of the errors if none of the futures are successful. For
+example:
+
+```javascript
+wate.lastValue([a, b, c]).done(function(errors, lastValue) {
+  if(!errors) console.log('last value to succeed was:', lastValue);
+  else console.log('all futures errored:', errors);
+});
+```
+
+
+
+#### Working with Futures
+
+
+### `wate.spreadValues(future, callback)`
+
+*alias: `wate.spread(future, callback)`*
+
+Given a Future that will resolve (if successful) to an array of values, calls
+the callback with the values as an argument list. For example:
+
+```javascript
+var red = readFile('red.txt', 'utf-8');
+var blue = readFile('blue.txt', 'utf-8');
+
+wate.spreadValues(wate.all([red, blue]), function(redText, blueText) {
+  console.log(redText);
+  console.log(blueText);
+});
+```
+
+
+### `wate.spreadErrors(future, callback)`
+
+Given a Future that will resolve (on errors) to an array of errors, calls the
+callback with the errors as an argument list. For example:
+
+```javascript
+var explode = readFile('none.txt', 'utf-8');
+var alsoExplode = readFile('none.txt', 'utf-8');
+
+wate.spreadErrors(wate.firstValue([explode, alsoExplode]), function(err1, err2) {
+  console.log(err1);
+  console.log(err2);
+});
+```
+
+
+### `wate.spreadAllValues(futures, callback)`
+
+*alias: `wate.spreadAll(futures, callback)`*
+
+Given an array of futures and a callback, calls the callback with an argument
+list of values if the futures all succeed. The values will be passed into the
+callback in the order that the futures were passed in the array. For example:
+
+```javascript
+wate.spreadAll([a, b, c], function(aValue, bValue, cValue) {
+  console.log('a:', aValue);
+  console.log('b:', bValue);
+  console.log('c:', cValue);
+});
+```
+
+This is just a convenient wrapper around a common pattern:
+
+```javascript
+wate.spread(wate.all([a, b, c]), function(aValue, bValue, cValue) {
+  console.log('a:', aValue);
+  console.log('b:', bValue);
+  console.log('c:', cValue);
+});
+```
+
+
+### `wate.transformValue(future, mapper)`
+
+*aliases: `wate.transform(future, callback)`, `wate.bindValue(future,
+callback)`, `wate.bind(future, callback)`*
+
+Given a future, returns a future that will resolve to the value of the given
+future, transformed by the given mapper function. For example:
+
+```javascript
+var fileContents = readFile('config.json', 'utf-8');
+var config = wate.transform(fileContents, function(text) {
+  return JSON.parse(text);
+});
+```
+
+
+### `wate.transformError(future, callback)`
+
+*alias: `wate.bindError(future, callback)`
+
+
+### `wate.invert(future)`
+
+
+
+
+### Creating Futures
+
+#### `wate.make(builder)`
+
+Given a callback of the form `function(callback) {}`, returns a Future that
+resolves to whatever the callback is called with. For example:
+
+```javascript
+var fs = require('fs');
+
+var fileFuture = wate.make(function(callback) {
+  fs.readFile('test.txt', 'utf-8', callback);
+});
+
+fileFuture.done(function(err, text) {
+  if(!err) console.log(text);
+});
+```
+
+
+#### `wate.fromPromise(promise)`
+
+Turns a Promise into a Wate Future. For example:
+
+```javascript
+var future = wate.fromPromise(somePromiseReturningFn());
+future.done(function(err, val) {
+  if(!err) console.log(val);
+});
+```
+
+
+#### `wate.fromDOMElement`
+
+Given a DOM element that emits `'load'` and `'error'` events, returns a future
+that resolves to a null error and the element if it loads, or an error if the
+element fails to load. For example:
+
+```javascript
+var image = new Image();
+image.src = 'test.png';
+var imageFuture = wate.fromDOMElement(image);
+
+// Append the image if it loads
+imageFuture.done(function(err, image) {
+  if(!err) document.body.appendChild(image);
 });
 ```
