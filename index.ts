@@ -105,6 +105,32 @@ export function mapErrors<E, V, OutE>(
   }));
 }
 
+export function flatMapValues<E, V, OutV>(
+  futures: Array<Future<E, V[]>>,
+  mapper: Transform<V, OutV>
+): Future<E, OutV[]> {
+  return bind(flatten(futures), mapRawCallback(mapper));
+}
+
+export var flatMap = flatMapValues;
+
+export function flatMapErrors<E, V, OutE>(
+  futures: Array<Future<E[], V>>,
+  mapper: Transform<E, OutE>
+): Future<OutE[], V> {
+  return bindError(flattenErrors(futures), mapRawCallback(mapper));
+}
+
+export function flattenValues<E, V>(futures: Array<Future<E, V[]>>): Future<E, V[]> {
+  return transform(all(futures), flattenRaw);
+}
+
+export var flatten = flattenValues;
+
+export function flattenErrors<E, V>(futures: Array<Future<E[], V>>): Future<E[], V> {
+  return transformError(none(futures), flattenRaw);
+}
+
 export function all<E,V>(futures: Array<Future<E, V>>): Future<E, V[]> {
   return make((cb: Callback<E, V[]>) => {
     run(collectValues, futures, cb);
@@ -320,4 +346,25 @@ function collectAllByTime<E, V>(
     acc.push(new Result(err, value));
     cb(err, value);
   });
+}
+
+function flattenRaw<T>(arr: T[][]): T[] {
+  var out: T[] = [];
+  for(var i = 0, l = arr.length; i < l; i++) {
+    var inner = arr[i];
+    for(var innerIndex = 0, innerLength = inner.length; innerIndex < innerLength; innerIndex++) {
+      out.push(inner[innerIndex]);
+    }
+  }
+  return out;
+}
+
+function mapRawCallback<In, Out>(mapper: Transform<In, Out>): Transform<In[], Out[]> {
+  return (arr: In[]) => {
+    var out: Out[] = [];
+    for(var i = 0, l = arr.length; i < l; i++) {
+      out.push(mapper(arr[i]));
+    }
+    return out;
+  };
 }

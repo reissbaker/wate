@@ -73,6 +73,24 @@ function mapErrors(futures, mapper) {
     }));
 }
 exports.mapErrors = mapErrors;
+function flatMapValues(futures, mapper) {
+    return exports.bind(exports.flatten(futures), mapRawCallback(mapper));
+}
+exports.flatMapValues = flatMapValues;
+exports.flatMap = flatMapValues;
+function flatMapErrors(futures, mapper) {
+    return bindError(flattenErrors(futures), mapRawCallback(mapper));
+}
+exports.flatMapErrors = flatMapErrors;
+function flattenValues(futures) {
+    return exports.transform(all(futures), flattenRaw);
+}
+exports.flattenValues = flattenValues;
+exports.flatten = flattenValues;
+function flattenErrors(futures) {
+    return exports.transformError(none(futures), flattenRaw);
+}
+exports.flattenErrors = flattenErrors;
 function all(futures) {
     return make(function (cb) {
         run(collectValues, futures, cb);
@@ -244,4 +262,23 @@ function collectAllByTime(future, acc, index, cb) {
         acc.push(new Result(err, value));
         cb(err, value);
     });
+}
+function flattenRaw(arr) {
+    var out = [];
+    for (var i = 0, l = arr.length; i < l; i++) {
+        var inner = arr[i];
+        for (var innerIndex = 0, innerLength = inner.length; innerIndex < innerLength; innerIndex++) {
+            out.push(inner[innerIndex]);
+        }
+    }
+    return out;
+}
+function mapRawCallback(mapper) {
+    return function (arr) {
+        var out = [];
+        for (var i = 0, l = arr.length; i < l; i++) {
+            out.push(mapper(arr[i]));
+        }
+        return out;
+    };
 }
