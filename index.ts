@@ -93,42 +93,6 @@ export function bindError<E, V, OutE>(
 
 export var transformError = bindError;
 
-export function mapValues<E, V, OutV>(
-  futures: Array<Future<E, V>>,
-  mapper: Transform<V, OutV>
-): Future<E, OutV[]> {
-  return make((cb: Callback<E, OutV[]>) => {
-    run(collectMapValues(mapper), futures, cb);
-  });
-}
-
-export var map = mapValues;
-
-export function mapErrors<E, V, OutE>(
-  futures: Array<Future<E, V>>,
-  mapper: Transform<E, OutE>
-): Future<OutE[], V> {
-  return invert(make((cb: Callback<V, OutE[]>) => {
-    run(collectMapErrors(mapper), futures, cb);
-  }));
-}
-
-export function flatMapValues<E, V, OutV>(
-  futures: Array<Future<E, V[]>>,
-  mapper: Transform<V, OutV>
-): Future<E, OutV[]> {
-  return bind(flatten(futures), mapRawCallback(mapper));
-}
-
-export var flatMap = flatMapValues;
-
-export function flatMapErrors<E, V, OutE>(
-  futures: Array<Future<E[], V>>,
-  mapper: Transform<E, OutE>
-): Future<OutE[], V> {
-  return bindError(flattenErrors(futures), mapRawCallback(mapper));
-}
-
 export function flattenValues<E, V>(futures: Array<Future<E, V[]>>): Future<E, V[]> {
   return transform(all(futures), flattenRaw);
 }
@@ -137,20 +101,6 @@ export var flatten = flattenValues;
 
 export function flattenErrors<E, V>(futures: Array<Future<E[], V>>): Future<E[], V> {
   return transformError(none(futures), flattenRaw);
-}
-
-export function eachValue<E, V>(futures: Array<Future<E, V>>, cb: (v: V) => any): void {
-  for(var i = 0, l = futures.length; i < l; i++) {
-    then(futures[i], cb);
-  }
-}
-
-export var each = eachValue;
-
-export function eachError<E, V>(futures: Array<Future<E, V>>, cb: (e: E) => any): void {
-  for(var i = 0, l = futures.length; i < l; i++) {
-    then(futures[i], null, cb);
-  }
 }
 
 // TODO: use this more internally to reduce code duplication
@@ -400,14 +350,4 @@ function flattenRaw<T>(arr: T[][]): T[] {
     }
   }
   return out;
-}
-
-function mapRawCallback<In, Out>(mapper: Transform<In, Out>): Transform<In[], Out[]> {
-  return (arr: In[]) => {
-    var out: Out[] = [];
-    for(var i = 0, l = arr.length; i < l; i++) {
-      out.push(mapper(arr[i]));
-    }
-    return out;
-  };
 }

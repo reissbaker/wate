@@ -64,28 +64,6 @@ function bindError(future, transform) {
 }
 exports.bindError = bindError;
 exports.transformError = bindError;
-function mapValues(futures, mapper) {
-    return make(function (cb) {
-        run(collectMapValues(mapper), futures, cb);
-    });
-}
-exports.mapValues = mapValues;
-exports.map = mapValues;
-function mapErrors(futures, mapper) {
-    return invert(make(function (cb) {
-        run(collectMapErrors(mapper), futures, cb);
-    }));
-}
-exports.mapErrors = mapErrors;
-function flatMapValues(futures, mapper) {
-    return exports.bind(exports.flatten(futures), mapRawCallback(mapper));
-}
-exports.flatMapValues = flatMapValues;
-exports.flatMap = flatMapValues;
-function flatMapErrors(futures, mapper) {
-    return bindError(flattenErrors(futures), mapRawCallback(mapper));
-}
-exports.flatMapErrors = flatMapErrors;
 function flattenValues(futures) {
     return exports.transform(all(futures), flattenRaw);
 }
@@ -95,19 +73,6 @@ function flattenErrors(futures) {
     return exports.transformError(none(futures), flattenRaw);
 }
 exports.flattenErrors = flattenErrors;
-function eachValue(futures, cb) {
-    for (var i = 0, l = futures.length; i < l; i++) {
-        then(futures[i], cb);
-    }
-}
-exports.eachValue = eachValue;
-exports.each = eachValue;
-function eachError(futures, cb) {
-    for (var i = 0, l = futures.length; i < l; i++) {
-        then(futures[i], null, cb);
-    }
-}
-exports.eachError = eachError;
 // TODO: use this more internally to reduce code duplication
 function then(future, cb, eb) {
     return future.done(function (err, val) {
@@ -299,13 +264,4 @@ function flattenRaw(arr) {
         }
     }
     return out;
-}
-function mapRawCallback(mapper) {
-    return function (arr) {
-        var out = [];
-        for (var i = 0, l = arr.length; i < l; i++) {
-            out.push(mapper(arr[i]));
-        }
-        return out;
-    };
 }
