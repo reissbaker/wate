@@ -270,6 +270,34 @@ function collectErrors<E, V>(future: Future<E, V>, acc: E[], index: number, cb: 
   });
 }
 
+function collectMapValues<E, V, OutV>(mapper: Transform<V, OutV>): Collector<E, V, OutV, E> {
+  return (future: Future<E, V>, acc: OutV[], index: number, cb: Callback<E, OutV>) => {
+    future.done((err, value) => {
+      if(!err) {
+        var outValue = mapper(value);
+        acc[index] = outValue;
+        cb(err, outValue);
+      } else {
+        cb(err);
+      }
+    });
+  };
+}
+
+function collectMapErrors<E, V, OutE>(mapper: Transform<E, OutE>): Collector<E, V, OutE, V> {
+  return (future: Future<E, V>, acc: OutE[], index: number, cb: Callback<V, OutE>) => {
+    future.done((err, value) => {
+      if(err) {
+        var outError = mapper(err);
+        acc[index] = outError;
+        cb(value, outError);
+      } else {
+        cb(value);
+      }
+    });
+  };
+}
+
 function collectAll<E, V>(
   future: Future<E, V>,
   acc: Array<Result<E, V>>,

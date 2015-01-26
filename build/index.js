@@ -60,6 +60,19 @@ function bindError(future, transform) {
 }
 exports.bindError = bindError;
 exports.transformError = bindError;
+function mapValues(futures, mapper) {
+    return make(function (cb) {
+        run(collectMapValues(mapper), futures, cb);
+    });
+}
+exports.mapValues = mapValues;
+exports.map = mapValues;
+function mapErrors(futures, mapper) {
+    return invert(make(function (cb) {
+        run(collectMapErrors(mapper), futures, cb);
+    }));
+}
+exports.mapErrors = mapErrors;
 function all(futures) {
     return make(function (cb) {
         run(collectValues, futures, cb);
@@ -191,6 +204,34 @@ function collectErrors(future, acc, index, cb) {
             acc[index] = err;
         cb(value, err);
     });
+}
+function collectMapValues(mapper) {
+    return function (future, acc, index, cb) {
+        future.done(function (err, value) {
+            if (!err) {
+                var outValue = mapper(value);
+                acc[index] = outValue;
+                cb(err, outValue);
+            }
+            else {
+                cb(err);
+            }
+        });
+    };
+}
+function collectMapErrors(mapper) {
+    return function (future, acc, index, cb) {
+        future.done(function (err, value) {
+            if (err) {
+                var outError = mapper(err);
+                acc[index] = outError;
+                cb(value, outError);
+            }
+            else {
+                cb(value);
+            }
+        });
+    };
 }
 function collectAll(future, acc, index, cb) {
     future.done(function (err, value) {
