@@ -147,7 +147,7 @@ function invert(future) {
 }
 exports.invert = invert;
 function spreadValues(future, cb) {
-    future.done(function (err, values) {
+    return future.done(function (err, values) {
         if (!err)
             cb.apply(undefined, values);
     });
@@ -155,11 +155,11 @@ function spreadValues(future, cb) {
 exports.spreadValues = spreadValues;
 exports.spread = spreadValues;
 function spreadAll(futures, cb) {
-    spreadValues(all(futures), cb);
+    return spreadValues(all(futures), cb);
 }
 exports.spreadAll = spreadAll;
 function spreadErrors(future, cb) {
-    future.done(function (errors, val) {
+    return future.done(function (errors, val) {
         if (errors)
             cb.apply(undefined, errors);
     });
