@@ -21,7 +21,7 @@ them.
 
 
 Examples
---------------------------------------------------------------------------------
+================================================================================
 
 Wrap a Node function to make it return Futures:
 
@@ -69,9 +69,11 @@ wate.spreadAll([proust, hemingway], function(proustText, hemingwayText) {
 
 
 API
---------------------------------------------------------------------------------
+================================================================================
 
-### Futures
+
+Futures
+--------------------------------------------------------------------------------
 
 Futures expose a single method:
 
@@ -91,8 +93,8 @@ fileFuture.done(function(err, text) {
 ```
 
 
-
-### Composing Futures
+Composing Futures
+--------------------------------------------------------------------------------
 
 #### `wate.all(futures)`
 
@@ -195,10 +197,10 @@ wate.lastValue([a, b, c]).done(function(errors, lastValue) {
 
 
 
-#### Working with Futures
+Working with Futures
+--------------------------------------------------------------------------------
 
-
-### `wate.spreadValues(future, callback)`
+#### `wate.spreadValues(future, callback)`
 
 *alias: `wate.spread(future, callback)`*
 
@@ -216,7 +218,7 @@ wate.spreadValues(wate.all([red, blue]), function(redText, blueText) {
 ```
 
 
-### `wate.spreadErrors(future, callback)`
+#### `wate.spreadErrors(future, callback)`
 
 Given a Future that will resolve (on errors) to an array of errors, calls the
 callback with the errors as an argument list. For example:
@@ -232,7 +234,7 @@ wate.spreadErrors(wate.firstValue([explode, alsoExplode]), function(err1, err2) 
 ```
 
 
-### `wate.spreadAllValues(futures, callback)`
+#### `wate.spreadAllValues(futures, callback)`
 
 *alias: `wate.spreadAll(futures, callback)`*
 
@@ -259,7 +261,7 @@ wate.spread(wate.all([a, b, c]), function(aValue, bValue, cValue) {
 ```
 
 
-### `wate.transformValue(future, mapper)`
+#### `wate.transformValue(future, mapper)`
 
 *aliases: `wate.transform(future, callback)`, `wate.bindValue(future,
 callback)`, `wate.bind(future, callback)`*
@@ -275,17 +277,16 @@ var config = wate.transform(fileContents, function(text) {
 ```
 
 
-### `wate.transformError(future, callback)`
+#### `wate.transformError(future, callback)`
 
 *alias: `wate.bindError(future, callback)`
 
 
-### `wate.invert(future)`
+#### `wate.invert(future)`
 
 
-
-
-### Creating Futures
+Creating Futures
+--------------------------------------------------------------------------------
 
 #### `wate.make(builder)`
 
