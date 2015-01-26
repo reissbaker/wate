@@ -106,13 +106,12 @@ export function flattenErrors<E, V>(futures: Array<Future<E[], V>>): Future<E[],
 // TODO: use this more internally to reduce code duplication
 export function then<E, V>(
   future: Future<E, V>,
-  cb?: (v: V) => any,
+  cb: (v: V) => any,
   eb?: (e: E) => any
 ): Future<E, V> {
-  return future.done((err, val) => {
-    if(err && eb) eb(err);
-    else if(!err && cb) cb(val);
-  });
+  var promise = new Promise(future);
+  promise.then(cb, eb);
+  return future;
 }
 
 export function all<E,V>(futures: Array<Future<E, V>>): Future<E, V[]> {

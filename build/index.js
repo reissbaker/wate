@@ -75,12 +75,9 @@ function flattenErrors(futures) {
 exports.flattenErrors = flattenErrors;
 // TODO: use this more internally to reduce code duplication
 function then(future, cb, eb) {
-    return future.done(function (err, val) {
-        if (err && eb)
-            eb(err);
-        else if (!err && cb)
-            cb(val);
-    });
+    var promise = new Promise(future);
+    promise.then(cb, eb);
+    return future;
 }
 exports.then = then;
 function all(futures) {
