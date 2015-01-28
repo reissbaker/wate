@@ -1,8 +1,14 @@
 {
   "name": "wate",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Wrangle callbacks without Promises.",
   "main": "build/index.js",
+  "repository": [
+    {
+      "type": "git",
+      "url": "https://github.com/reissbaker/wate.git"
+    }
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
