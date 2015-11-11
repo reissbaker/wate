@@ -6,6 +6,12 @@ var Future = (function () {
             return this;
         };
     }
+    Future.prototype.catch = function (callback) {
+        return this.done(function (err, val) {
+            if (err)
+                callback(err);
+        });
+    };
     return Future;
 })();
 module.exports = Future;

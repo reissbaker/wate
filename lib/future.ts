@@ -12,6 +12,12 @@ class Future<E, V> {
       return this;
     };
   }
+
+  catch(callback: (e: E) => any): Future<E, V> {
+    return this.done((err, val) => {
+      if(err) callback(err);
+    });
+  }
 }
 
 export = Future;

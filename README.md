@@ -105,6 +105,20 @@ fileFuture.done((err, text) => {
 ```
 
 
+#### `.catch(callback)`
+
+Given a callback of the form `function(err) {}`, calls the callback with its
+error if the future resolves to an error. For example:
+
+```javascript
+const fileFuture = readFile('test.txt', 'utf-8');
+
+fileFuture.catch((err) => {
+  // Only runs if there's an error
+});
+```
+
+
 Composing Futures
 --------------------------------------------------------------------------------
 

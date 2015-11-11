@@ -8,6 +8,7 @@ declare class Deferred<E, V> {
     private _scheduled;
     constructor();
     done(callback: Callback<E, V>): void;
+    catch(callback: (e: E) => any): void;
     _trigger(): void;
 }
 export = Deferred;

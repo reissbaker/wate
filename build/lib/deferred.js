@@ -21,6 +21,12 @@ var Deferred = (function () {
         if (this._settled)
             this._trigger();
     };
+    Deferred.prototype.catch = function (callback) {
+        this.done(function (err, val) {
+            if (err)
+                callback(err);
+        });
+    };
     Deferred.prototype._trigger = function () {
         var _this = this;
         if (this._scheduled)

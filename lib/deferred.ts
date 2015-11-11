@@ -30,6 +30,12 @@ class Deferred<E, V> {
     if(this._settled) this._trigger();
   }
 
+  catch(callback: (e: E) => any) {
+    this.done((err, val) => {
+      if(err) callback(err);
+    });
+  }
+
   _trigger() {
     if(this._scheduled) return;
     this._scheduled = true;
