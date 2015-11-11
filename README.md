@@ -117,16 +117,18 @@ wate.all([proust, hemingway]).done(function(err, texts) {
 
 #### `wate.none(futures)`
 
-Returns a Future that waits until all of the given futures have errored out, or
-errors out as soon as the first given future succeeds. For example:
+Returns a Future that collects all of the errors and returns them in an array
+as the `err` parameters to its `done` function, or succeeds if any of the
+futures succeed.
 
 ```javascript
 var planA = runPlan('a');
 var planB = runPlan('b');
 
-wate.none([planA, planB]).done(function(succeeded, allFailures) {
+wate.none([planA, planB]).done(function(allFailures, succeeded) {
   if(!succeeded) {
     console.log("we're doomed");
+    console.log(allFailures);
   }
 });
 ```
