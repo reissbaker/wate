@@ -1,0 +1,47 @@
+import Future = require('./lib/future');
+import Result = require('./lib/result');
+import Callback = require('./lib/callback');
+export interface BuilderFunction<E, V> {
+    (callback: Callback<E, V>): any;
+}
+export interface DoubledBuilderFn<E, V> {
+    (fullfill: (v: V) => any, reject?: (e: E) => any): any;
+}
+export interface Thenable<E, V, Er, Vr> {
+    then: (callback: (v: V) => Vr, errback: (e: E) => Er) => any;
+}
+export interface Transform<I, O> {
+    (val: I): O;
+}
+export interface DOMEl {
+    addEventListener: (key: string, listener: (v?: any) => any) => any;
+}
+export declare function make<E, V>(builder: BuilderFunction<E, V>): Future<E, V>;
+export declare function create<E, V>(builder: DoubledBuilderFn<E, V>): Future<E, V>;
+export declare function fromPromise<E, V>(promise: Thenable<E, V, any, any>): Future<E, V>;
+export declare function fromDOMElement<E>(el: DOMEl): Future<E, DOMEl>;
+export declare function toPromise<E, V>(future: Future<E, V>): Thenable<E, V, any, any>;
+export declare function bindValue<E, V, OutV>(future: Future<E, V>, transform: Transform<V, OutV>): Future<E, OutV>;
+export declare var bind: typeof bindValue;
+export declare var transform: typeof bindValue;
+export declare var transformValue: typeof bindValue;
+export declare function bindError<E, V, OutE>(future: Future<E, V>, transform: Transform<E, OutE>): Future<OutE, V>;
+export declare var transformError: typeof bindError;
+export declare function flattenValues<E, V>(futures: Array<Future<E, V[]>>): Future<E, V[]>;
+export declare var flatten: typeof flattenValues;
+export declare function flattenErrors<E, V>(futures: Array<Future<E[], V>>): Future<E[], V>;
+export declare function then<E, V>(future: Future<E, V>, cb: (v: V) => any, eb?: (e: E) => any): Future<E, V>;
+export declare function all<E, V>(futures: Array<Future<E, V>>): Future<E, V[]>;
+export declare function none<E, V>(futures: Array<Future<E, V>>): Future<E[], V>;
+export declare function settled<E, V>(futures: Array<Future<E, V>>): Future<any, Array<Result<E, V>>>;
+export declare var firstValue: typeof none;
+export declare var first: typeof none;
+export declare function lastValue<E, V>(futures: Array<Future<E, V>>): Future<E[], V>;
+export declare var last: typeof lastValue;
+export declare var firstError: typeof all;
+export declare function lastError<E, V>(futures: Array<Future<E, V>>): Future<E, V[]>;
+export declare function invert<E, V>(future: Future<E, V>): Future<V, E>;
+export declare function spreadValues<E, V>(future: Future<E, V[]>, cb: (...values: V[]) => any): Future<E, V[]>;
+export declare var spread: typeof spreadValues;
+export declare function spreadAll<E, V>(futures: Array<Future<E, V>>, cb: (...values: V[]) => any): Future<E, V[]>;
+export declare function spreadErrors<E, V>(future: Future<E[], V>, cb: (...errors: E[]) => any): Future<E[], V>;

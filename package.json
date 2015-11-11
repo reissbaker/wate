@@ -10,12 +10,17 @@
     }
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "./node_modules/.bin/tsc -d -m commonjs --outDir build --noImplicitAny index.ts"
   },
   "keywords": [
     "promises",
     "callbacks"
   ],
+  "devDependencies": {
+    "typescript": "~1.6.2"
+  },
+  "typings": "build/index.d.ts",
   "author": "Matt Baker",
   "license": "ISC"
 }

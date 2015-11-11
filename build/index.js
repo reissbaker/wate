@@ -46,9 +46,7 @@ function toPromise(future) {
 exports.toPromise = toPromise;
 function bindValue(future, transform) {
     return create(function (fulfill, reject) {
-        then(future, function (v) {
-            fulfill(transform(v));
-        }, reject);
+        then(future, function (v) { fulfill(transform(v)); }, reject);
     });
 }
 exports.bindValue = bindValue;
@@ -57,9 +55,7 @@ exports.transform = exports.bind;
 exports.transformValue = exports.transform;
 function bindError(future, transform) {
     return create(function (fulfill, reject) {
-        then(future, fulfill, function (e) {
-            reject(transform(e));
-        });
+        then(future, fulfill, function (e) { reject(transform(e)); });
     });
 }
 exports.bindError = bindError;
@@ -116,9 +112,7 @@ function lastError(futures) {
 exports.lastError = lastError;
 function invert(future) {
     return make(function (cb) {
-        future.done(function (err, value) {
-            cb(value, err);
-        });
+        future.done(function (err, value) { cb(value, err); });
     });
 }
 exports.invert = invert;
