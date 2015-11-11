@@ -300,10 +300,24 @@ var config = wate.transform(fileContents, function(text) {
 
 #### `wate.transformError(future, callback)`
 
-*alias: `wate.bindError(future, callback)`
+*alias: `wate.bindError(future, callback)`*
+
+Similar to `wate.transformValue`, but transforms errors.
 
 
 #### `wate.invert(future)`
+
+Given a future that resolves to an error, returns a future that resolves to
+that error as its value. Similarly, given a future that resolves to a value,
+returns a future that resolves to the value as its error. For example:
+
+```javascript
+const val = wate.value(10);
+const inverted = wate.invert(val);
+inverted.done((err) => {
+  // err is 10 here
+});
+```
 
 
 Creating Futures
