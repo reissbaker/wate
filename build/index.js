@@ -72,15 +72,15 @@ function bindError(future, transform) {
 }
 exports.bindError = bindError;
 exports.transformError = bindError;
-function flattenValues(futures) {
+function concatValues(futures) {
     return exports.transform(all(futures), flattenRaw);
 }
-exports.flattenValues = flattenValues;
-exports.flatten = flattenValues;
-function flattenErrors(futures) {
+exports.concatValues = concatValues;
+exports.concat = concatValues;
+function concatErrors(futures) {
     return exports.transformError(none(futures), flattenRaw);
 }
-exports.flattenErrors = flattenErrors;
+exports.concatErrors = concatErrors;
 // TODO: use this more internally to reduce code duplication
 function then(future, cb, eb) {
     return future.done(function (err, val) {

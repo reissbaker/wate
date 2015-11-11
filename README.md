@@ -194,6 +194,29 @@ wate.lastValue([a, b, c]).done(function(errors, lastValue) {
 ```
 
 
+#### `wate.concatValues`
+
+*alias: `wate.concat`*
+
+Given an array of Futures that resolve to arrays of values, returns a Future
+that resolves to the concatenation of all of the values. For example:
+
+```javascript
+const a = wate.value([ 10, 20 ]);
+const b = wate.value([ 30, 40 ]);
+const c = wate.value([ 50, 60 ]);
+
+wate.concat([ a, b, c ]).done((err, values) => {
+  // values is [ 10, 20, 30, 40, 50, 60 ]
+});
+```
+
+
+#### `wate.concatErrors`
+
+Similar to `wate.concatValues`, but for errors.
+
+
 
 Working with Futures
 --------------------------------------------------------------------------------

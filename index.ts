@@ -105,13 +105,13 @@ export function bindError<E, V, OutE>(
 
 export var transformError = bindError;
 
-export function flattenValues<E, V>(futures: Array<Future<E, V[]>>): Future<E, V[]> {
+export function concatValues<E, V>(futures: Array<Future<E, V[]>>): Future<E, V[]> {
   return transform(all(futures), flattenRaw);
 }
 
-export var flatten = flattenValues;
+export var concat = concatValues;
 
-export function flattenErrors<E, V>(futures: Array<Future<E[], V>>): Future<E[], V> {
+export function concatErrors<E, V>(futures: Array<Future<E[], V>>): Future<E[], V> {
   return transformError(none(futures), flattenRaw);
 }
 
