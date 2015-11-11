@@ -406,15 +406,21 @@ fileFuture.done((err, text) => {
 ```
 
 
-#### `wate.fromPromise(promise)`
+#### `wate.value(val)`
 
-Turns a Promise into a Wate Future. For example:
+Creates a future of a raw value. For example:
 
 ```javascript
-const future = wate.fromPromise(somePromiseReturningFn());
-future.done((err, val) => {
-  if(!err) console.log(val);
-});
+const future = wate.value(10);
+```
+
+
+#### `wate.error(err)`
+
+Creates a failed future given a raw error (or any JS value). For example:
+
+```javascript
+const future = wate.error("an error string");
 ```
 
 
@@ -433,4 +439,29 @@ const imageFuture = wate.fromDOMElement(image);
 imageFuture.done((err, image) => {
   if(!err) document.body.appendChild(image);
 });
+```
+
+
+Promise Interop
+--------------------------------------------------------------------------------
+
+#### `wate.fromPromise(promise)`
+
+Turns a Promise into a Wate Future. For example:
+
+```javascript
+const promise = somePromiseReturningFn();
+const future = wate.fromPromise(promise);
+```
+
+
+#### `wate.toPromise(future)`
+
+Turns a Future into a Promises/A compatible promise. Note that the Promises/A+
+spec mandates interop with Promises/A, so this should work even with
+Promises/A+ libraries. For example:
+
+```javascript
+const future = wate.value(10);
+const promise = wate.toPromise(future);
 ```
