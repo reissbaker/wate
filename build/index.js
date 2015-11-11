@@ -153,6 +153,36 @@ function spreadErrors(future, cb) {
     });
 }
 exports.spreadErrors = spreadErrors;
+function unwrapValue(future) {
+    return make(function (cb) {
+        future.done(function (err, val) {
+            if (err) {
+                cb(err);
+                return;
+            }
+            val.done(cb);
+        });
+    });
+}
+exports.unwrapValue = unwrapValue;
+exports.unwrap = unwrapValue;
+function unwrapError(future) {
+    return make(function (cb) {
+        future.done(function (err, val) {
+            if (err == null) {
+                cb(null, val);
+                return;
+            }
+            err.done(cb);
+        });
+    });
+}
+exports.unwrapError = unwrapError;
+function unwrapBind(future, transform) {
+    return exports.unwrap(bindValue(future, transform));
+}
+exports.unwrapBind = unwrapBind;
+exports.unwrapTransform = unwrapBind;
 function findLast(futures, predicate, valueGetter, errorGetter, cb) {
     var timeOrdered = make(function (cb) {
         run(collectAllByTime, futures, cb);

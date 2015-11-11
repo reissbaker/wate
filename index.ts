@@ -201,6 +201,45 @@ export function spreadErrors<E, V>(
   });
 }
 
+export function unwrapValue<E, V, OutE>(
+  future: Future<E, Future<OutE, V>>
+): Future<E|OutE, V> {
+  return make((cb) => {
+    future.done((err, val) => {
+      if(err) {
+        cb(err);
+        return;
+      }
+      val.done(cb);
+    });
+  });
+}
+
+export var unwrap = unwrapValue;
+
+export function unwrapError<E, V, OutV>(
+  future: Future<Future<E, OutV>, V>
+): Future<E, V|OutV> {
+  return make((cb) => {
+    future.done((err, val) => {
+      if(err == null) {
+        cb(null, val);
+        return;
+      }
+      err.done(cb);
+    });
+  });
+}
+
+export function unwrapBind<E, V, OutE, OutV>(
+  future: Future<E, V>,
+  transform: (v: V) => Future<OutE, OutV>
+): Future<E|OutE, OutV> {
+  return unwrap(bindValue(future, transform));
+}
+
+export var unwrapTransform = unwrapBind;
+
 function findLast<E, V, Ce, Cv>(
   futures: Array<Future<E, V>>,
   predicate: (r: Result<E, V>) => boolean,

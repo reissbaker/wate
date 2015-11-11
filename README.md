@@ -305,6 +305,81 @@ var config = wate.transform(fileContents, function(text) {
 Similar to `wate.transformValue`, but transforms errors.
 
 
+### `wate.unwrapValue`
+
+*alias: `wate.unwrap`*
+
+Given a future that resolves to another future, unwraps the inner future.
+
+```javascript
+const urlToLoad = wate.make((callback) => {
+  fs.readFile("url-to-load.txt", "utf-8", callback);
+});
+
+const networkFuture = wate.transform(urlToLoad, (url) => {
+  // For bind() calls, ordinarily we return a value. Here, however, we're
+  // returning another future, since we need to make an async request to get
+  // the data. That means "networkFuture" will actually resolve to... another
+  // future.
+  return wate.make((callback) => {
+    networkRequest(url, callback);
+  });
+});
+
+// Hence, we unwrap it:
+const network = wate.unwrap(networkFuture);
+
+// In practice, you'd probably just do the following:
+
+const network = wate.unwrap(wate.transform(urlToLoad, (url) => {
+  return wate.make((callback) => {
+    networkRequest(url, callback);
+  });
+}));
+
+// Or, even better, assuming you're using wate throughout your codebase:
+
+const network = wate.unwrap(wate.transform(urlToLoad, (url) => {
+  return someWateEnabledNetworkCall(urlToLoad);
+}));
+
+// Or, using the unwrapTransform (also called unwrapBind) helper, which is just
+// a function that composes unwrap() and transform() into a single call:
+
+const network = wate.unwrapTransform(urlToLoad, (url) => {
+  return someWateEnabledNetworkCall(urlToLoad);
+});
+```
+
+
+#### `wate.unwrapError`
+
+Similar to `unwrapValue`, but unwraps a future returned as an error rather than a
+future that's returned as a value.
+
+
+#### `wate.unwrapBind`
+
+*alias: `wate.unwrapTransform`*
+
+Composes the `bindValue` and `unwrapValue` calls. For example:
+
+```javascript
+const urlToLoad = wate.make((callback) => {
+  fs.readFile('url-to-load.txt', 'utf-8', callback);
+});
+const network = wate.unwrapTransform(urlToLoad, (url) => {
+  return wate.make((callback) => {
+    networkRequest(url, callback);
+  });
+});
+
+network.done((err, val) => {
+  // assuming success, val is the value of the network call
+});
+```
+
+
 #### `wate.invert(future)`
 
 Given a future that resolves to an error, returns a future that resolves to

@@ -47,3 +47,8 @@ export declare function spreadValues<E, V>(future: Future<E, V[]>, cb: (...value
 export declare var spread: typeof spreadValues;
 export declare function spreadAll<E, V>(futures: Array<Future<E, V>>, cb: (...values: V[]) => any): Future<E, V[]>;
 export declare function spreadErrors<E, V>(future: Future<E[], V>, cb: (...errors: E[]) => any): Future<E[], V>;
+export declare function unwrapValue<E, V, OutE>(future: Future<E, Future<OutE, V>>): Future<E | OutE, V>;
+export declare var unwrap: typeof unwrapValue;
+export declare function unwrapError<E, V, OutV>(future: Future<Future<E, OutV>, V>): Future<E, V | OutV>;
+export declare function unwrapBind<E, V, OutE, OutV>(future: Future<E, V>, transform: (v: V) => Future<OutE, OutV>): Future<E | OutE, OutV>;
+export declare var unwrapTransform: typeof unwrapBind;

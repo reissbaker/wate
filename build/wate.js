@@ -154,7 +154,7 @@ function spreadErrors(future, cb) {
     });
 }
 exports.spreadErrors = spreadErrors;
-function raiseValue(future) {
+function unwrapValue(future) {
     return make(function (cb) {
         future.done(function (err, val) {
             if (err) {
@@ -165,9 +165,9 @@ function raiseValue(future) {
         });
     });
 }
-exports.raiseValue = raiseValue;
-exports.raise = raiseValue;
-function raiseError(future) {
+exports.unwrapValue = unwrapValue;
+exports.unwrap = unwrapValue;
+function unwrapError(future) {
     return make(function (cb) {
         future.done(function (err, val) {
             if (err == null) {
@@ -178,7 +178,12 @@ function raiseError(future) {
         });
     });
 }
-exports.raiseError = raiseError;
+exports.unwrapError = unwrapError;
+function unwrapBind(future, transform) {
+    return exports.unwrap(bindValue(future, transform));
+}
+exports.unwrapBind = unwrapBind;
+exports.unwrapTransform = unwrapBind;
 function findLast(futures, predicate, valueGetter, errorGetter, cb) {
     var timeOrdered = make(function (cb) {
         run(collectAllByTime, futures, cb);

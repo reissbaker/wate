@@ -215,6 +215,54 @@ describe("concatValues", () => {
   });
 });
 
+describe("concatErrors", () => {
+  it("concats arrays of errors from multiple futures", (done) => {
+    const a = wate.error([ 10, 20 ]);
+    const b = wate.error([ 30, 40 ]);
+    wate.concatErrors([ a, b ]).done((errs, val) => {
+      expect(val).to.equal(undefined);
+      expect(errs).to.deep.equal([ 10, 20, 30, 40 ]);
+      done();
+    });
+  });
+});
+
+describe("unwrapValue", () => {
+  it("unwraps the future in the value position", (done) => {
+    const a = wate.value(wate.value(10));
+    wate.unwrap(a).done((err, val) => {
+      expect(err).to.equal(null);
+      expect(val).to.equal(10);
+      done();
+    });
+  });
+});
+
+describe("unwrapError", () => {
+  it("unwraps the future in the error position", (done) => {
+    const a = wate.error(wate.value(10));
+    wate.unwrapError(a).done((err, val) => {
+      expect(err).to.equal(null);
+      expect(val).to.equal(10);
+      done();
+    });
+  });
+});
+
+describe("unwrapTransform", () => {
+  it("transforms a future and unwraps its result", (done) => {
+    const a = wate.value(10);
+    const transformed = wate.unwrapTransform(a, (val) => {
+      return wate.value(val + 10);
+    });
+    transformed.done((err, val) => {
+      expect(err).to.equal(null);
+      expect(val).to.equal(20);
+      done();
+    });
+  });
+});
+
 describe("lastValue", () => {
   it("returns the last value to succeed, given a set of futures", (done) => {
     const a = wate.value(10);
