@@ -60,7 +60,7 @@ const proust = readFile('proust.txt', 'utf-8');
 const hemingway = readFile('hemingway.txt', 'utf-8');
 
 // Get all the of values out of the futures once they've loaded
-wate.spreadAll([ proust, hemingway ], (proustText, hemingwayText) => {
+wate.splat([ proust, hemingway ], (proustText, hemingwayText) => {
   // Print the values
   console.log('proust said', proustText);
   console.log('hemingway said', hemingwayText);
@@ -227,7 +227,7 @@ Working with Futures
 
 #### `wate.spreadValues(future, callback)`
 
-*alias: `wate.spread(future, callback)`*
+*alias: `wate.splatValues`*
 
 Given a Future that will resolve (if successful) to an array of values, calls
 the callback with the values as an argument list. For example:
@@ -245,6 +245,8 @@ wate.spreadValues(wate.all([ red, blue ]), (redText, blueText) => {
 
 #### `wate.spreadErrors(future, callback)`
 
+*alias: `wate.splatErrors`*
+
 Given a Future that will resolve (on errors) to an array of errors, calls the
 callback with the errors as an argument list. For example:
 
@@ -259,9 +261,9 @@ wate.spreadErrors(wate.firstValue([ explode, alsoExplode ]), (err1, err2) => {
 ```
 
 
-#### `wate.spreadAllValues(futures, callback)`
+#### `wate.spreadAll(futures, callback)`
 
-*alias: `wate.spreadAll(futures, callback)`*
+*alias: `wate.splatAll`, `wate.splat`*
 
 Given an array of futures and a callback, calls the callback with an argument
 list of values if the futures all succeed. The values will be passed into the

@@ -330,7 +330,7 @@ export function spreadValues<E, V>(
   });
 }
 
-export const spread = spreadValues;
+export const splatValues = spreadValues;
 
 /*
  * Splat the values from an array of futures into a callback
@@ -341,6 +341,9 @@ export function spreadAll<E, V>(
 ): Future<E, V[]> {
   return spreadValues(all(futures), cb);
 }
+
+export const splatAll = spreadAll;
+export const splat = spreadAll;
 
 /*
  * Splat the errors from a single future with an array of errors into a callback
@@ -353,6 +356,7 @@ export function spreadErrors<E, V>(
     if(errors) cb.apply(undefined, errors);
   });
 }
+export const splatErrors = spreadErrors;
 
 
 /*

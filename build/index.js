@@ -263,7 +263,7 @@ function spreadValues(future, cb) {
     });
 }
 exports.spreadValues = spreadValues;
-exports.spread = spreadValues;
+exports.splatValues = spreadValues;
 /*
  * Splat the values from an array of futures into a callback
  */
@@ -271,6 +271,8 @@ function spreadAll(futures, cb) {
     return spreadValues(all(futures), cb);
 }
 exports.spreadAll = spreadAll;
+exports.splatAll = spreadAll;
+exports.splat = spreadAll;
 /*
  * Splat the errors from a single future with an array of errors into a callback
  */
@@ -281,6 +283,7 @@ function spreadErrors(future, cb) {
     });
 }
 exports.spreadErrors = spreadErrors;
+exports.splatErrors = spreadErrors;
 /*
  * Internal helper functions
  * -------------------------------------------------------------------------------------------------
