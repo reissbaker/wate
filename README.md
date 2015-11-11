@@ -350,7 +350,7 @@ const config = wate.transform(fileContents, (text) => {
 Similar to `wate.transformValue`, but transforms errors.
 
 
-#### `wate.unwrapValue`
+#### `wate.unwrapValue(future)`
 
 *alias: `wate.unwrap`*
 
@@ -385,13 +385,13 @@ const network = wate.unwrapTransform(urlToLoad, (url) => {
 ```
 
 
-#### `wate.unwrapError`
+#### `wate.unwrapError(future)`
 
 Similar to `unwrapValue`, but unwraps a future returned as an error rather than a
 future that's returned as a value.
 
 
-#### `wate.unwrapTransform`
+#### `wate.unwrapTransform(future, transformFunction)`
 
 *alias: `wate.unwrapBind`*
 
@@ -467,7 +467,7 @@ const future = wate.error("an error string");
 ```
 
 
-#### `wate.fromDOMElement`
+#### `wate.fromDOMElement(domElement)`
 
 Given a DOM element that emits `'load'` and `'error'` events, returns a future
 that resolves to a null error and the element if it loads, or an error if the
