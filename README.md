@@ -39,10 +39,11 @@ Transform a value as soon as it's loaded:
 ```javascript
 const fs = xmlParser = require('xml2json');
 
+// Read the file using the fn we defined above
+const file = readFile('config.xml', 'utf-8');
+
 // Transform to JSON
-const json = wate.transform(readFile('config.xml', 'utf-8'), (xml) => {
-  return xmlParser.toJson(xml);
-});
+const json = wate.transform(file, (xml) => return xmlParser.toJson(xml));
 
 // Print the JSON
 json.done((err, jsonVal) => {
