@@ -388,10 +388,10 @@ futures appear in the array and returns a future that will resolve to the value
 of the callback. For example:
 
 ```javascript
-const config = wate.transform(readFile('config.json', 'utf-8'), JSON.parse);
+const conf = wate.transform(readFile('config.json', 'utf-8'), JSON.parse);
 const overrides = wate.transform(readFile('overrides.json', 'utf-8'), JSON.parse);
 
-const fullConfig = wate.transformValues([ config, overrides ], (configHash, overrideHash) => {
+const fullConf = wate.transformValues([conf, overrides], (conf, overrideHash) => {
   return _.extend({}, configHash, overrideHash);
 });
 ```
@@ -451,7 +451,7 @@ future that's returned as a value.
 
 *alias: `wate.unwrapBind`*
 
-Composes the `transformValue` and `unwrapValue` calls. For example:
+Composes the `transform` and `unwrapValue` calls. For example:
 
 ```javascript
 const urlToLoad = readFile('url-to-load.txt', 'utf-8');
@@ -464,6 +464,18 @@ const network = wate.unwrapTransform(urlToLoad, (url) => {
 
 network.done((err, val) => {
   // assuming success, val is the value of the network call
+});
+```
+
+Since it composes `transform`, it similarly also works with arrays of futures:
+
+```javascript
+const conf = wate.transform(readFile('config.json', 'utf-8'), JSON.parse);
+const overrides = wate.transform(readFile('overrides.json', 'utf-8'), JSON.parse);
+
+const pidfile = wate.unwrapTransform([conf, overrides], (conf, overrideHash) => {
+  const conf = _.extend({}, configHash, overrideHash);
+  return readFile(conf["pidfile"]);
 });
 ```
 
