@@ -391,8 +391,8 @@ of the callback. For example:
 const conf = wate.transform(readFile('config.json', 'utf-8'), JSON.parse);
 const overrides = wate.transform(readFile('overrides.json', 'utf-8'), JSON.parse);
 
-const fullConf = wate.transformValues([conf, overrides], (conf, overrideHash) => {
-  return _.extend({}, configHash, overrideHash);
+const fullConf = wate.transformValues([conf, overrides], (confHash, overrideHash) => {
+  return _.extend({}, confHash, overrideHash);
 });
 ```
 
@@ -473,8 +473,8 @@ Since it composes `transform`, it similarly also works with arrays of futures:
 const conf = wate.transform(readFile('config.json', 'utf-8'), JSON.parse);
 const overrides = wate.transform(readFile('overrides.json', 'utf-8'), JSON.parse);
 
-const pidfile = wate.unwrapTransform([conf, overrides], (conf, overrideHash) => {
-  const conf = _.extend({}, configHash, overrideHash);
+const pidfile = wate.unwrapTransform([conf, overrides], (confHash, overrideHash) => {
+  const conf = _.extend({}, confHash, overrideHash);
   return readFile(conf["pidfile"]);
 });
 ```
