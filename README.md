@@ -475,7 +475,11 @@ const overrides = wate.transform(readFile('overrides.json', 'utf-8'), JSON.parse
 
 const pidfile = wate.unwrapTransform([conf, overrides], (confHash, overrideHash) => {
   const conf = _.extend({}, confHash, overrideHash);
-  return readFile(conf["pidfile"]);
+  return readFile(conf["pidfile"], "utf-8");
+});
+
+pidfile.done((err, val) => {
+  // assuming success, val is the contents of the pidfile
 });
 ```
 
