@@ -89,16 +89,16 @@ function loadJson(filename) {
 }
 
 // Read and parse the two files in parallel
-const config = loadJson('config.json');
+const conf = loadJson('config.json');
 const overrides = loadJson('overrides.json');
 
 // Combine the parsed hashes
-const fullConfig = wate.transform([ config, overrides ], (confHash, overrideHash) => {
-  return _.extend({}, configHash, overrideHash);
+const fullConf = wate.transform([conf, overrides], (confHash, overrideHash) => {
+  return _.extend({}, confHash, overrideHash);
 });
 
 // Print the combined hash
-fullConfig.done((err, val) => {
+fullConf.done((err, val) => {
   console.log(val);
 });
 ```
