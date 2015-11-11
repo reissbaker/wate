@@ -256,7 +256,8 @@ Working with Futures
 *alias: `wate.spreadValues`*
 
 Given a Future that will resolve (if successful) to an array of values, calls
-the callback with the values as an argument list. For example:
+the callback with the values as an argument list. Returns the given future. For
+example:
 
 ```javascript
 const red = readFile('red.txt', 'utf-8');
@@ -274,7 +275,8 @@ wate.splatValues(wate.all([ red, blue ]), (redText, blueText) => {
 *alias: `wate.spreadErrors`*
 
 Given a Future that will resolve (on errors) to an array of errors, calls the
-callback with the errors as an argument list. For example:
+callback with the errors as an argument list. Returns the given future. For
+example:
 
 ```javascript
 const explode = readFile('none.txt', 'utf-8');
@@ -293,7 +295,9 @@ wate.splatErrors(wate.firstValue([ explode, alsoExplode ]), (err1, err2) => {
 
 Given an array of futures and a callback, calls the callback with an argument
 list of values if the futures all succeed. The values will be passed into the
-callback in the order that the futures were passed in the array. For example:
+callback in the order that the futures were passed in the array. Returns a
+future that succeeds if all of the futures succeed, or fails if any of them
+fail. For example:
 
 ```javascript
 wate.splat([ a, b, c ], (aValue, bValue, cValue) => {
@@ -310,6 +314,16 @@ wate.splatValues(wate.all([ a, b, c ]), (aValue, bValue, cValue) => {
   console.log('a:', aValue);
   console.log('b:', bValue);
   console.log('c:', cValue);
+});
+```
+
+Since the `all` future is returned, this allows for easy error handling:
+
+```javascript
+wate.splat([ a, b, c ], (aValue, bValue, cValue) => {
+  // handle values here
+}).catch((err) => {
+  // handle errors here
 });
 ```
 
