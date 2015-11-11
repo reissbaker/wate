@@ -193,8 +193,10 @@ function findLast(futures, predicate, valueGetter, errorGetter, cb) {
     });
 }
 function collectLast(results, predicate, valueGetter, errorGetter, cb) {
-    var last, errors = [], found = false;
-    for (var i = 0, l = results.length; i < l; i++) {
+    var errors = [];
+    var found = false;
+    var last;
+    for (var i = 0; i < results.length; i++) {
         if (predicate(results[i])) {
             last = valueGetter(results[i]);
             found = true;
@@ -221,7 +223,9 @@ function getError(result) {
     return result.error;
 }
 function run(collectFn, futures, cb) {
-    var vals = new Array(futures.length), erred = false, count = 0;
+    var vals = new Array(futures.length);
+    var erred = false;
+    var count = 0;
     for (var i = 0; i < futures.length; i++) {
         if (!futures[i])
             continue;
@@ -308,9 +312,9 @@ function collectAllByTime(future, acc, index, cb) {
 }
 function flattenRaw(arr) {
     var out = [];
-    for (var i = 0, l = arr.length; i < l; i++) {
+    for (var i = 0; i < arr.length; i++) {
         var inner = arr[i];
-        for (var innerIndex = 0, innerLength = inner.length; innerIndex < innerLength; innerIndex++) {
+        for (var innerIndex = 0; innerIndex < inner.length; innerIndex++) {
             out.push(inner[innerIndex]);
         }
     }

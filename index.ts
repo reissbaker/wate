@@ -27,13 +27,13 @@ export interface DOMEl {
 }
 
 export function make<E, V>(builder: BuilderFunction<E, V>): Future<E, V> {
-  var deferred = new Deferred<E, V>();
+  const deferred = new Deferred<E, V>();
   builder(deferred.cb);
   return new Future(deferred);
 }
 
 export function create<E, V>(builder: DoubledBuilderFn<E, V>): Future<E, V> {
-  var deferred = new Deferred<E, V>();
+  const deferred = new Deferred<E, V>();
 
   builder((v: V) => {
     deferred.cb(null, v);
@@ -90,9 +90,9 @@ export function bindValue<E, V, OutV>(
   });
 }
 
-export var bind = bindValue;
-export var transform = bind;
-export var transformValue = transform;
+export const bind = bindValue;
+export const transform = bind;
+export const transformValue = transform;
 
 export function bindError<E, V, OutE>(
   future: Future<E, V>,
@@ -103,13 +103,13 @@ export function bindError<E, V, OutE>(
   });
 }
 
-export var transformError = bindError;
+export const transformError = bindError;
 
 export function concatValues<E, V>(futures: Array<Future<E, V[]>>): Future<E, V[]> {
   return transform(all(futures), flattenRaw);
 }
 
-export var concat = concatValues;
+export const concat = concatValues;
 
 export function concatErrors<E, V>(futures: Array<Future<E[], V>>): Future<E[], V> {
   return transformError(none(futures), flattenRaw);
@@ -149,8 +149,8 @@ export function settled<E, V>(futures: Array<Future<E, V>>): Future<any, Array<R
   });
 }
 
-export var firstValue = none;
-export var first = firstValue;
+export const firstValue = none;
+export const first = firstValue;
 
 export function lastValue<E, V>(futures: Array<Future<E, V>>): Future<E[], V> {
   return make((cb: Callback<E[], V>) => {
@@ -158,9 +158,9 @@ export function lastValue<E, V>(futures: Array<Future<E, V>>): Future<E[], V> {
   });
 }
 
-export var last = lastValue;
+export const last = lastValue;
 
-export var firstError = all;
+export const firstError = all;
 
 export function lastError<E, V>(futures: Array<Future<E, V>>): Future<E, V[]> {
   return invert(make<V[], E>((cb: Callback<V[], E>) => {
@@ -183,7 +183,7 @@ export function spreadValues<E, V>(
   });
 }
 
-export var spread = spreadValues;
+export const spread = spreadValues;
 
 export function spreadAll<E, V>(
   futures: Array<Future<E, V>>,
@@ -215,7 +215,7 @@ export function unwrapValue<E, V, OutE>(
   });
 }
 
-export var unwrap = unwrapValue;
+export const unwrap = unwrapValue;
 
 export function unwrapError<E, V, OutV>(
   future: Future<Future<E, OutV>, V>
@@ -238,7 +238,7 @@ export function unwrapBind<E, V, OutE, OutV>(
   return unwrap(bindValue(future, transform));
 }
 
-export var unwrapTransform = unwrapBind;
+export const unwrapTransform = unwrapBind;
 
 function findLast<E, V, Ce, Cv>(
   futures: Array<Future<E, V>>,
@@ -247,7 +247,7 @@ function findLast<E, V, Ce, Cv>(
   errorGetter: (r: Result<E, V>) => Ce,
   cb: Callback<Ce[], Cv>
 ): void {
-  var timeOrdered = make((cb: Callback<E, Array<Result<E, V>>>) => {
+  const timeOrdered = make((cb: Callback<E, Array<Result<E, V>>>) => {
     run(collectAllByTime, futures, cb);
   });
 
@@ -263,11 +263,11 @@ function collectLast<E, V, Ce, Cv>(
   errorGetter: (r: Result<E, V>) => Ce,
   cb: Callback<Ce[], Cv>
 ) {
-  var last: Cv,
-      errors: Ce[] = [],
-      found = false;
+  const errors: Ce[] = [];
+  let found = false;
+  let last: Cv;
 
-  for(var i = 0, l = results.length; i < l; i++) {
+  for(let i = 0; i < results.length; i++) {
     if(predicate(results[i])) {
       last = valueGetter(results[i]);
       found = true;
@@ -302,11 +302,11 @@ function run<E, V, Ce, Cv>(
   futures: Array<Future<E,V>>,
   cb: Callback<Ce, Cv[]>
 ) {
-  var vals: Cv[] = new Array(futures.length),
-      erred = false,
-      count = 0;
+  const vals: Cv[] = new Array(futures.length);
+  let erred = false;
+  let count = 0;
 
-  for(var i = 0; i < futures.length; i++) {
+  for(let i = 0; i < futures.length; i++) {
     if(!futures[i]) continue;
     count++;
     collectFn(futures[i], vals, i, (err) => {
@@ -348,7 +348,7 @@ function collectMapValues<E, V, OutV>(mapper: Transform<V, OutV>): Collector<E, 
   return (future: Future<E, V>, acc: OutV[], index: number, cb: Callback<E, OutV>) => {
     future.done((err, value) => {
       if(!err) {
-        var outValue = mapper(value);
+        const outValue = mapper(value);
         acc[index] = outValue;
         cb(err, outValue);
       } else {
@@ -362,7 +362,7 @@ function collectMapErrors<E, V, OutE>(mapper: Transform<E, OutE>): Collector<E, 
   return (future: Future<E, V>, acc: OutE[], index: number, cb: Callback<V, OutE>) => {
     future.done((err, value) => {
       if(err) {
-        var outError = mapper(err);
+        const outError = mapper(err);
         acc[index] = outError;
         cb(value, outError);
       } else {
@@ -407,10 +407,10 @@ function collectAllByTime<E, V>(
 }
 
 function flattenRaw<T>(arr: T[][]): T[] {
-  var out: T[] = [];
-  for(var i = 0, l = arr.length; i < l; i++) {
-    var inner = arr[i];
-    for(var innerIndex = 0, innerLength = inner.length; innerIndex < innerLength; innerIndex++) {
+  const out: T[] = [];
+  for(let i = 0; i < arr.length; i++) {
+    const inner = arr[i];
+    for(let innerIndex = 0; innerIndex < inner.length; innerIndex++) {
       out.push(inner[innerIndex]);
     }
   }
