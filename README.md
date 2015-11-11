@@ -43,7 +43,7 @@ const xmlParser = require('xml2json');
 const file = readFile('config.xml', 'utf-8');
 
 // Transform to JSON
-const json = wate.transform(file, (xmlText) => return xmlParser.toJson(xmlText));
+const json = wate.transform(file, (xmlText) => xmlParser.toJson(xmlText));
 
 // Print the JSON
 json.done((err, jsonVal) => {
