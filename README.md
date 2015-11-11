@@ -9,7 +9,7 @@
  \_____/\___/  \_______/   \___/   \_______/
 ```
 
-Wate is a small (2.1kb minified and gzipped), fast, full-featured, easy-to-debug
+Wate is a small (2.2kb minified and gzipped), fast, full-featured, easy-to-debug
 control flow library for JavaScript and TypeScript. Rather than using
 Promise-based libraries that swallow errors and lose stack traces in
 production, use Wate to manage callbacks inside of lightweight Futures.
@@ -334,16 +334,19 @@ wate.splat([ a, b, c ], (aValue, bValue, cValue) => {
 
 #### `wate.transformValue(future, mapper)`
 
-*aliases: `wate.transform`, `wate.bindValue`, `wate.bind`*
+*aliases: `wate.bindValue`*
 
 Given a future, returns a future that will resolve to the value of the given
 future, transformed by the given mapper function. For example:
 
 ```javascript
 const fileContents = readFile('config.json', 'utf-8');
-const config = wate.transform(fileContents, (text) => {
+const config = wate.transformValue(fileContents, (text) => {
   return JSON.parse(text);
 });
+
+// Or, more succinctly:
+const config = wate.transformValue(fileContents, JSON.parse);
 ```
 
 
@@ -352,6 +355,35 @@ const config = wate.transform(fileContents, (text) => {
 *alias: `wate.bindError`*
 
 Similar to `wate.transformValue`, but transforms errors.
+
+
+#### `wate.transformValues(futures, callback)`
+
+Given an array of futures and a callback of the form `function(...args) {}`,
+passes each of the resolved futures' values into the callback in the order the
+futures appear in the array and returns a future that will resolve to the value
+of the callback. For example:
+
+```javascript
+const config = wate.transform(readFile('config.json', 'utf-8'), JSON.parse);
+const overrides = wate.transform(readFile('overrides.json', 'utf-8'), JSON.parse);
+
+const fullConfig = wate.transformValues([ config, overrides ], (configHash, overrideHash) => {
+  return _.extend({}, configHash, overrideHash);
+});
+```
+
+
+#### `wate.transformErrors(futures, callback)`
+
+Similar to `wate.transformValues`, but operates on errors instead of values.
+
+
+### `wate.transform(future|futures, callback)`
+
+Convenience function: if given a single future and a callback, proxies to
+`wate.transformValue`. If given an array of futures and a callback, proxies to
+`wate.transformValues`.
 
 
 #### `wate.unwrapValue(future)`

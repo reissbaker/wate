@@ -107,15 +107,36 @@ exports.toPromise = toPromise;
 /*
  * Transform values
  */
+// Transform a single value
 function bindValue(future, transform) {
     return create(function (fulfill, reject) {
         then(future, function (v) { fulfill(transform(v)); }, reject);
     });
 }
 exports.bindValue = bindValue;
-exports.bind = bindValue;
-exports.transform = exports.bind;
-exports.transformValue = exports.transform;
+// Transform an array of values
+function bindValues(future, transform) {
+    return make(function (callback) {
+        var allFutures = all(future);
+        allFutures.done(function (err, values) {
+            if (err)
+                callback(err);
+            else
+                callback(null, transform.apply(null, values));
+        });
+    });
+}
+exports.bindValues = bindValues;
+// Overload impl (not counted in overload list during typecheck)
+function bind(future, transform) {
+    if (future instanceof Array) {
+        return bindValues(future, transform);
+    }
+    return bindValue(future, transform);
+}
+exports.bind = bind;
+exports.transform = bind;
+exports.transformValue = bindValue;
 /*
  * Transform errors
  */
@@ -126,6 +147,18 @@ function bindError(future, transform) {
 }
 exports.bindError = bindError;
 exports.transformError = bindError;
+function bindErrors(futures, transform) {
+    return make(function (callback) {
+        var noneFutures = none(futures);
+        noneFutures.done(function (errors, val) {
+            if (val)
+                callback(null, val);
+            else
+                callback(transform.apply(null, errors));
+        });
+    });
+}
+exports.bindErrors = bindErrors;
 /*
  * Concat values
  */
@@ -172,10 +205,10 @@ function unwrapError(future) {
     });
 }
 exports.unwrapError = unwrapError;
-/*
- * Convenience function composing unwrap() and bind()
- */
 function unwrapBind(future, transform) {
+    if (future instanceof Array) {
+        return exports.unwrap(bindValues(future, transform));
+    }
     return exports.unwrap(bindValue(future, transform));
 }
 exports.unwrapBind = unwrapBind;

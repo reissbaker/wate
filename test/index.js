@@ -153,6 +153,50 @@ describe("bindError", () => {
   });
 });
 
+describe("bindErrors", () => {
+  it("works with an array of futures", (done) => {
+    const a = wate.error(10);
+    const b = wate.error(20);
+
+    const transformed = wate.bindErrors([ a, b ], (aVal, bVal) => {
+      return aVal + bVal;
+    });
+
+    transformed.done((err, val) => {
+      expect(val).to.equal(undefined);
+      expect(err).to.equal(30);
+      done();
+    });
+  });
+});
+
+describe("bind", () => {
+  it("works with single futures", (done) => {
+    const val = wate.value(10);
+    const transformed = wate.bindValue(val, (val) => { return val * 2; });
+    transformed.done((err, val) => {
+      expect(err).to.equal(null);
+      expect(val).to.equal(20);
+      done();
+    });
+  });
+
+  it("works with an array of futures", (done) => {
+    const a = wate.value(10);
+    const b = wate.value(20);
+
+    const transformed = wate.bind([ a, b ], (aVal, bVal) => {
+      return aVal + bVal;
+    });
+
+    transformed.done((err, val) => {
+      expect(err).to.equal(null);
+      expect(val).to.equal(30);
+      done();
+    });
+  });
+});
+
 describe("all", () => {
   it("combines values from an array of futures into a future with an array of values", (done) => {
     const a = wate.value(10);
