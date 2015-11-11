@@ -9,7 +9,7 @@
  \_____/\___/  \_______/   \___/   \_______/
 ```
 
-Wate is a small (2kb minified and gzipped), fast, full-featured, easy-to-debug
+Wate is a small (2.1kb minified and gzipped), fast, full-featured, easy-to-debug
 control flow library for JavaScript and TypeScript. Rather than using
 Promise-based libraries that swallow errors and lose stack traces in
 production, use Wate to manage callbacks inside of lightweight Futures.

@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "test": "./node_modules/.bin/mocha --recursive test/",
-    "build": "./node_modules/.bin/tsc -d -m commonjs --outDir build --noImplicitAny index.ts && ./node_modules/.bin/browserify -o build/wate.js build/index.js && ./node_modules/.bin/uglifyjs -m -o build/wate.min.js build/wate.js && gzip -c build/wate.min.js > build/wate.min.jz.gz"
+    "build": "./node_modules/.bin/tsc -d -m commonjs --outDir build --noImplicitAny index.ts && ./node_modules/.bin/browserify -o build/wate.js -s wate build/index.js && ./node_modules/.bin/uglifyjs -m -o build/wate.min.js build/wate.js && gzip -c build/wate.min.js > build/wate.min.jz.gz"
   },
   "keywords": [
     "promises",
