@@ -109,9 +109,14 @@ export function then<E, V>(
   cb: (v: V) => any,
   eb?: (e: E) => any
 ): Future<E, V> {
-  var promise = new Promise(future);
-  promise.then(cb, eb);
-  return future;
+  return future.done((err, val) => {
+    if(err) {
+      if(eb) eb(err);
+    }
+    else {
+      cb(val);
+    }
+  });
 }
 
 export function all<E,V>(futures: Array<Future<E, V>>): Future<E, V[]> {
