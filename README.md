@@ -150,7 +150,7 @@ wate.settled([ a, b, c ]).done((_, results) => {
 ```
 
 
-##### `wate.firstValue(futures)`
+#### `wate.firstValue(futures)`
 
 *alias: `wate.first(futures)`*
 
