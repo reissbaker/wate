@@ -250,7 +250,7 @@ function run<E, V, Ce, Cv>(
       erred = false,
       count = 0;
 
-  for(var i = 0, l = futures.length; i < l; i++) {
+  for(var i = 0; i < futures.length; i++) {
     if(!futures[i]) continue;
     count++;
     collectFn(futures[i], vals, i, (err) => {
@@ -323,8 +323,9 @@ function collectAll<E, V>(
   cb: Callback<E, V>
 ) {
   future.done(function(err, value) {
-    acc[index] = new Result(err, value);
-    cb(err, value);
+    const result = acc[index] = new Result(err, value);
+    // We collect errors in results, so this function itself never errors out
+    cb(null);
   });
 }
 
@@ -335,8 +336,17 @@ function collectAllByTime<E, V>(
   cb: Callback<E, V>
 ) {
   future.done(function(err, value) {
-    acc.push(new Result(err, value));
-    cb(err, value);
+    let inserted = false;
+    for(let i = 0; i < acc.length; i++) {
+      if(!acc[i]) {
+        acc[i] = new Result(err, value);
+        inserted = true;
+        break;
+      }
+    }
+    if(!inserted) throw new Error("Couldn't insert; wtf happened");
+    // We collect errors in results, so this function itself never errors out
+    cb(null);
   });
 }
 

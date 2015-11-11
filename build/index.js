@@ -173,7 +173,7 @@ function getError(result) {
 }
 function run(collectFn, futures, cb) {
     var vals = new Array(futures.length), erred = false, count = 0;
-    for (var i = 0, l = futures.length; i < l; i++) {
+    for (var i = 0; i < futures.length; i++) {
         if (!futures[i])
             continue;
         count++;
@@ -236,14 +236,25 @@ function collectMapErrors(mapper) {
 }
 function collectAll(future, acc, index, cb) {
     future.done(function (err, value) {
-        acc[index] = new Result(err, value);
-        cb(err, value);
+        var result = acc[index] = new Result(err, value);
+        // We collect errors in results, so this function itself never errors out
+        cb(null);
     });
 }
 function collectAllByTime(future, acc, index, cb) {
     future.done(function (err, value) {
-        acc.push(new Result(err, value));
-        cb(err, value);
+        var inserted = false;
+        for (var i = 0; i < acc.length; i++) {
+            if (!acc[i]) {
+                acc[i] = new Result(err, value);
+                inserted = true;
+                break;
+            }
+        }
+        if (!inserted)
+            throw new Error("Couldn't insert; wtf happened");
+        // We collect errors in results, so this function itself never errors out
+        cb(null);
     });
 }
 function flattenRaw(arr) {
