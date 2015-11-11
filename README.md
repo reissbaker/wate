@@ -329,26 +329,13 @@ const networkFuture = wate.transform(urlToLoad, (url) => {
 // Hence, we unwrap it:
 const network = wate.unwrap(networkFuture);
 
-// In practice, you'd probably just do the following:
+// In practice, you'd probably just use the unwrapTransform convenience
+// function like so:
 
-const network = wate.unwrap(wate.transform(urlToLoad, (url) => {
+const network = wate.unwrapTransform(urlToLoad, (url) => {
   return wate.make((callback) => {
     networkRequest(url, callback);
   });
-}));
-
-// Or, even better, assuming you're using wate throughout your codebase:
-
-const network = wate.unwrap(wate.transform(urlToLoad, (url) => {
-  return someWateEnabledNetworkCall(urlToLoad);
-}));
-
-// Or, using the unwrapTransform (also called unwrapBind) convenience function,
-// which is just a function that composes unwrap() and transform() into a single
-// call:
-
-const network = wate.unwrapTransform(urlToLoad, (url) => {
-  return someWateEnabledNetworkCall(urlToLoad);
 });
 ```
 
