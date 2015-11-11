@@ -59,8 +59,9 @@ Read some files in parallel and print them when you're done:
 const proust = readFile('proust.txt', 'utf-8');
 const hemingway = readFile('hemingway.txt', 'utf-8');
 
-// Print the values once they've both loaded
+// Get all the of values out of the futures once they've loaded
 wate.spreadAll([ proust, hemingway ], (proustText, hemingwayText) => {
+  // Print the values
   console.log('proust said', proustText);
   console.log('hemingway said', hemingwayText);
 });
