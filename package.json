@@ -10,7 +10,7 @@
     }
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "./node_modules/.bin/mocha --recursive test/",
     "build": "./node_modules/.bin/tsc -d -m commonjs --outDir build --noImplicitAny index.ts"
   },
   "keywords": [
@@ -18,7 +18,9 @@
     "callbacks"
   ],
   "devDependencies": {
-    "typescript": "~1.6.2"
+    "typescript": "~1.6.2",
+    "mocha": "~2.3.3",
+    "chai": "~3.4.1"
   },
   "typings": "build/index.d.ts",
   "author": "Matt Baker",
