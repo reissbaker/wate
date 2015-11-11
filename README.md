@@ -166,7 +166,7 @@ wate.settled([ a, b, c ]).done((_, results) => {
 
 #### `wate.firstValue(futures)`
 
-*alias: `wate.first(futures)`*
+*alias: `wate.first`*
 
 Returns a Future that resolves to the first value that any of the given futures
 resolve to, or to an array of all of the errors if none of the futures are
@@ -196,7 +196,7 @@ wate.firstError([ a, b, c ]).done((values, firstError) => {
 
 #### `wate.lastValue(futures)`
 
-*alias: `wate.last(futures)`*
+*alias: `wate.last`*
 
 Returns a Future that resolves to the last value that the given Futures resolve
 to, or an array or all of the errors if none of the futures are successful. For
@@ -237,9 +237,9 @@ Similar to `wate.concatValues`, but for errors.
 Working with Futures
 --------------------------------------------------------------------------------
 
-#### `wate.spreadValues(future, callback)`
+#### `wate.splatValues(future, callback)`
 
-*alias: `wate.splatValues`*
+*alias: `wate.spreadValues`*
 
 Given a Future that will resolve (if successful) to an array of values, calls
 the callback with the values as an argument list. For example:
@@ -248,16 +248,16 @@ the callback with the values as an argument list. For example:
 const red = readFile('red.txt', 'utf-8');
 const blue = readFile('blue.txt', 'utf-8');
 
-wate.spreadValues(wate.all([ red, blue ]), (redText, blueText) => {
+wate.splatValues(wate.all([ red, blue ]), (redText, blueText) => {
   console.log(redText);
   console.log(blueText);
 });
 ```
 
 
-#### `wate.spreadErrors(future, callback)`
+#### `wate.splatErrors(future, callback)`
 
-*alias: `wate.splatErrors`*
+*alias: `wate.spreadErrors`*
 
 Given a Future that will resolve (on errors) to an array of errors, calls the
 callback with the errors as an argument list. For example:
@@ -266,23 +266,23 @@ callback with the errors as an argument list. For example:
 const explode = readFile('none.txt', 'utf-8');
 const alsoExplode = readFile('none.txt', 'utf-8');
 
-wate.spreadErrors(wate.firstValue([ explode, alsoExplode ]), (err1, err2) => {
+wate.splatErrors(wate.firstValue([ explode, alsoExplode ]), (err1, err2) => {
   console.log(err1);
   console.log(err2);
 });
 ```
 
 
-#### `wate.spreadAll(futures, callback)`
+#### `wate.splat(futures, callback)`
 
-*alias: `wate.splatAll`, `wate.splat`*
+*aliases: `wate.splatAll`, `wate.spreadAll`, `wate.spread`*
 
 Given an array of futures and a callback, calls the callback with an argument
 list of values if the futures all succeed. The values will be passed into the
 callback in the order that the futures were passed in the array. For example:
 
 ```javascript
-wate.spreadAll([ a, b, c ], (aValue, bValue, cValue) => {
+wate.splat([ a, b, c ], (aValue, bValue, cValue) => {
   console.log('a:', aValue);
   console.log('b:', bValue);
   console.log('c:', cValue);
@@ -292,7 +292,7 @@ wate.spreadAll([ a, b, c ], (aValue, bValue, cValue) => {
 This is just a convenient wrapper around a common pattern:
 
 ```javascript
-wate.spread(wate.all([ a, b, c ]), (aValue, bValue, cValue) => {
+wate.splatValues(wate.all([ a, b, c ]), (aValue, bValue, cValue) => {
   console.log('a:', aValue);
   console.log('b:', bValue);
   console.log('c:', cValue);
@@ -302,8 +302,7 @@ wate.spread(wate.all([ a, b, c ]), (aValue, bValue, cValue) => {
 
 #### `wate.transformValue(future, mapper)`
 
-*aliases: `wate.transform(future, callback)`, `wate.bindValue(future,
-callback)`, `wate.bind(future, callback)`*
+*aliases: `wate.transform`, `wate.bindValue`, `wate.bind`*
 
 Given a future, returns a future that will resolve to the value of the given
 future, transformed by the given mapper function. For example:
@@ -318,7 +317,7 @@ const config = wate.transform(fileContents, (text) => {
 
 #### `wate.transformError(future, callback)`
 
-*alias: `wate.bindError(future, callback)`*
+*alias: `wate.bindError`*
 
 Similar to `wate.transformValue`, but transforms errors.
 
@@ -364,11 +363,11 @@ Similar to `unwrapValue`, but unwraps a future returned as an error rather than 
 future that's returned as a value.
 
 
-#### `wate.unwrapBind`
+#### `wate.unwrapTransform`
 
-*alias: `wate.unwrapTransform`*
+*alias: `wate.unwrapBind`*
 
-Composes the `bindValue` and `unwrapValue` calls. For example:
+Composes the `transformValue` and `unwrapValue` calls. For example:
 
 ```javascript
 const urlToLoad = wate.make((callback) => {
