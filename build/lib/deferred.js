@@ -33,7 +33,7 @@ var Deferred = (function () {
             return;
         this._scheduled = true;
         process.nextTick(function () {
-            for (var i = 0, l = _this._cbs.length; i < l; i++) {
+            for (var i = 0; i < _this._cbs.length; i++) {
                 _this._cbs[i](_this.error, _this.value);
             }
             _this._cbs = [];

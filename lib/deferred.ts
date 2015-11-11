@@ -2,7 +2,7 @@
 
 import Callback = require('./callback');
 
-declare var process: { nextTick: (callback: () => any) => void; };
+declare const process: { nextTick: (callback: () => any) => void; };
 
 class Deferred<E, V> {
   value: V = null;
@@ -41,7 +41,7 @@ class Deferred<E, V> {
     this._scheduled = true;
 
     process.nextTick(() => {
-      for(var i = 0, l = this._cbs.length; i < l; i++) {
+      for(let i = 0; i < this._cbs.length; i++) {
         this._cbs[i](this.error, this.value);
       }
       this._cbs = [];
