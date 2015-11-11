@@ -92,12 +92,12 @@ function loadJson(filename) {
 const conf = loadJson('config.json');
 const overrides = loadJson('overrides.json');
 
-// Combine the parsed hashes
+// Combine the parsed hashes once they've loaded
 const fullConf = wate.transform([conf, overrides], (confHash, overrideHash) => {
   return _.extend({}, confHash, overrideHash);
 });
 
-// Print the combined hash
+// Print the combined hash when it's ready
 fullConf.done((err, val) => {
   console.log(val);
 });
