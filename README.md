@@ -64,7 +64,7 @@ json.done((err, jsonVal) => {
 ```
 
 
-Read some files in parallel and print them when you're done:
+Read some files concurrently and print them when you're done:
 
 ```javascript
 // Read in parallel
@@ -76,6 +76,30 @@ wate.splat([ proust, hemingway ], (proustText, hemingwayText) => {
   // Print the values
   console.log('proust said', proustText);
   console.log('hemingway said', hemingwayText);
+});
+```
+
+Read and parse some files concurrently, and operate on them both when you're
+done:
+
+```javascript
+function loadJson(filename) {
+  const file = readFile(filename, 'utf-8');
+  return wate.transform(file, JSON.parse);
+}
+
+// Read and parse the two files in parallel
+const config = loadJson('config.json');
+const overrides = loadJson('overrides.json');
+
+// Combine the parsed hashes
+const fullConfig = wate.transform([ config, overrides ], (configHash, overrideHash) => {
+  return _.extend({}, configHash, overrideHash);
+});
+
+// Print the combined hash
+fullConfig.done((err, val) => {
+  console.log(val);
 });
 ```
 
