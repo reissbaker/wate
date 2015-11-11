@@ -87,7 +87,7 @@ API
 Futures
 --------------------------------------------------------------------------------
 
-Futures expose a single method:
+Futures expose two methods:
 
 #### `.done(callback)`
 
