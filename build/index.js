@@ -3,12 +3,22 @@ var Deferred = require('./lib/deferred');
 var Future = require('./lib/future');
 var Result = require('./lib/result');
 var Promise = require('./lib/promise');
+/*
+ * Factory functions
+ * -------------------------------------------------------------------------------------------------
+ */
+/*
+ * Factory that gives a useful node-style callback to pass around
+ */
 function make(builder) {
     var deferred = new Deferred();
     builder(deferred.cb);
     return new Future(deferred);
 }
 exports.make = make;
+/*
+ * Factory that gives Promise-style fulfill() and reject() functions to call manually
+ */
 function create(builder) {
     var deferred = new Deferred();
     builder(function (v) {
@@ -19,16 +29,27 @@ function create(builder) {
     return new Future(deferred);
 }
 exports.create = create;
-function fromPromise(promise) {
-    return make(function (cb) {
-        promise.then(function (val) {
-            cb(null, val);
-        }, function (err) {
-            cb(err);
-        });
+/*
+ * Generate resolved futures from raw values
+ */
+function value(value) {
+    return create(function (fulfill) {
+        fulfill(value);
     });
 }
-exports.fromPromise = fromPromise;
+exports.value = value;
+/*
+ * Generate failed futures from raw error values
+ */
+function error(error) {
+    return make(function (callback) {
+        callback(error);
+    });
+}
+exports.error = error;
+/*
+ * Wrap loadable DOM elements, like images
+ */
 function fromDOMElement(el) {
     return make(function (cb) {
         el.addEventListener('load', function () {
@@ -40,48 +61,13 @@ function fromDOMElement(el) {
     });
 }
 exports.fromDOMElement = fromDOMElement;
-function toPromise(future) {
-    return new Promise(future);
-}
-exports.toPromise = toPromise;
-function value(value) {
-    return create(function (fulfill) {
-        fulfill(value);
-    });
-}
-exports.value = value;
-function error(error) {
-    return make(function (callback) {
-        callback(error);
-    });
-}
-exports.error = error;
-function bindValue(future, transform) {
-    return create(function (fulfill, reject) {
-        then(future, function (v) { fulfill(transform(v)); }, reject);
-    });
-}
-exports.bindValue = bindValue;
-exports.bind = bindValue;
-exports.transform = exports.bind;
-exports.transformValue = exports.transform;
-function bindError(future, transform) {
-    return create(function (fulfill, reject) {
-        then(future, fulfill, function (e) { reject(transform(e)); });
-    });
-}
-exports.bindError = bindError;
-exports.transformError = bindError;
-function concatValues(futures) {
-    return exports.transform(all(futures), flattenRaw);
-}
-exports.concatValues = concatValues;
-exports.concat = concatValues;
-function concatErrors(futures) {
-    return exports.transformError(none(futures), flattenRaw);
-}
-exports.concatErrors = concatErrors;
-// TODO: use this more internally to reduce code duplication
+/*
+ * Promise interop and helpers
+ * -------------------------------------------------------------------------------------------------
+ */
+/*
+ * Emulates the .then function from Promises/A, but as a function rather than a method
+ */
 function then(future, cb, eb) {
     return future.done(function (err, val) {
         if (err) {
@@ -94,65 +80,70 @@ function then(future, cb, eb) {
     });
 }
 exports.then = then;
-function all(futures) {
+/*
+ * Turn a Promise into a Future
+ */
+function fromPromise(promise) {
     return make(function (cb) {
-        run(collectValues, futures, cb);
+        promise.then(function (val) {
+            cb(null, val);
+        }, function (err) {
+            cb(err);
+        });
     });
 }
-exports.all = all;
-function none(futures) {
-    return invert(make(function (cb) {
-        run(collectErrors, futures, cb);
-    }));
+exports.fromPromise = fromPromise;
+/*
+ * Turn a Future into a Promise
+ */
+function toPromise(future) {
+    return new Promise(future);
 }
-exports.none = none;
-function settled(futures) {
-    return make(function (cb) {
-        run(collectAll, futures, cb);
+exports.toPromise = toPromise;
+/*
+ * Transformation functions
+ * -------------------------------------------------------------------------------------------------
+ */
+/*
+ * Transform values
+ */
+function bindValue(future, transform) {
+    return create(function (fulfill, reject) {
+        then(future, function (v) { fulfill(transform(v)); }, reject);
     });
 }
-exports.settled = settled;
-exports.firstValue = none;
-exports.first = exports.firstValue;
-function lastValue(futures) {
-    return make(function (cb) {
-        findLast(futures, hasValue, getValue, getError, cb);
+exports.bindValue = bindValue;
+exports.bind = bindValue;
+exports.transform = exports.bind;
+exports.transformValue = exports.transform;
+/*
+ * Transform errors
+ */
+function bindError(future, transform) {
+    return create(function (fulfill, reject) {
+        then(future, fulfill, function (e) { reject(transform(e)); });
     });
 }
-exports.lastValue = lastValue;
-exports.last = lastValue;
-exports.firstError = all;
-function lastError(futures) {
-    return invert(make(function (cb) {
-        findLast(futures, hasError, getError, getValue, cb);
-    }));
+exports.bindError = bindError;
+exports.transformError = bindError;
+/*
+ * Concat values
+ */
+function concatValues(futures) {
+    return exports.transform(all(futures), flattenRaw);
 }
-exports.lastError = lastError;
-function invert(future) {
-    return make(function (cb) {
-        future.done(function (err, value) { cb(value, err); });
-    });
+exports.concatValues = concatValues;
+exports.concat = concatValues;
+/*
+ * Concat errors
+ */
+function concatErrors(futures) {
+    return exports.transformError(none(futures), flattenRaw);
 }
-exports.invert = invert;
-function spreadValues(future, cb) {
-    return future.done(function (err, values) {
-        if (!err)
-            cb.apply(undefined, values);
-    });
-}
-exports.spreadValues = spreadValues;
-exports.spread = spreadValues;
-function spreadAll(futures, cb) {
-    return spreadValues(all(futures), cb);
-}
-exports.spreadAll = spreadAll;
-function spreadErrors(future, cb) {
-    return future.done(function (errors, val) {
-        if (errors)
-            cb.apply(undefined, errors);
-    });
-}
-exports.spreadErrors = spreadErrors;
+exports.concatErrors = concatErrors;
+/*
+ * Unwrap inner futures from the value position
+ */
 function unwrapValue(future) {
     return make(function (cb) {
         future.done(function (err, val) {
@@ -166,6 +157,9 @@ function unwrapValue(future) {
 }
 exports.unwrapValue = unwrapValue;
 exports.unwrap = unwrapValue;
+/*
+ * Unwrap inner futures from the error position
+ */
 function unwrapError(future) {
     return make(function (cb) {
         future.done(function (err, val) {
@@ -178,11 +172,119 @@ function unwrapError(future) {
     });
 }
 exports.unwrapError = unwrapError;
+/*
+ * Convenience function composing unwrap() and bind()
+ */
 function unwrapBind(future, transform) {
     return exports.unwrap(bindValue(future, transform));
 }
 exports.unwrapBind = unwrapBind;
 exports.unwrapTransform = unwrapBind;
+/*
+ * Invert a future
+ */
+function invert(future) {
+    return make(function (cb) {
+        future.done(function (err, value) { cb(value, err); });
+    });
+}
+exports.invert = invert;
+/*
+ * Collection functions
+ * -------------------------------------------------------------------------------------------------
+ */
+/*
+ * Compose multiple futures into a single future with all of their values in an array
+ */
+function all(futures) {
+    return make(function (cb) {
+        run(collectValues, futures, cb);
+    });
+}
+exports.all = all;
+/*
+ * Compose multiple futures into a single future with all of their errors in an array
+ */
+function none(futures) {
+    return invert(make(function (cb) {
+        run(collectErrors, futures, cb);
+    }));
+}
+exports.none = none;
+/*
+ * Compose multiple futures into a single future that contains all of their errors and values as
+ * Result tuples in an array
+ */
+function settled(futures) {
+    return make(function (cb) {
+        run(collectAll, futures, cb);
+    });
+}
+exports.settled = settled;
+/*
+ * Get the first value to resolve
+ */
+exports.firstValue = none;
+exports.first = exports.firstValue;
+/*
+ * Get the last value to resolve
+ */
+function lastValue(futures) {
+    return make(function (cb) {
+        findLast(futures, hasValue, getValue, getError, cb);
+    });
+}
+exports.lastValue = lastValue;
+exports.last = lastValue;
+/*
+ * Get the first error to occur
+ */
+exports.firstError = all;
+/*
+ * Get the last error to occur
+ */
+function lastError(futures) {
+    return invert(make(function (cb) {
+        findLast(futures, hasError, getError, getValue, cb);
+    }));
+}
+exports.lastError = lastError;
+/*
+ * Error and value spreading
+ * -------------------------------------------------------------------------------------------------
+ */
+/*
+ * Splat the values from a single future that resolves to an array of values into a callback
+ */
+function spreadValues(future, cb) {
+    return future.done(function (err, values) {
+        if (!err)
+            cb.apply(undefined, values);
+    });
+}
+exports.spreadValues = spreadValues;
+exports.spread = spreadValues;
+/*
+ * Splat the values from an array of futures into a callback
+ */
+function spreadAll(futures, cb) {
+    return spreadValues(all(futures), cb);
+}
+exports.spreadAll = spreadAll;
+/*
+ * Splat the errors from a single future with an array of errors into a callback
+ */
+function spreadErrors(future, cb) {
+    return future.done(function (errors, val) {
+        if (errors)
+            cb.apply(undefined, errors);
+    });
+}
+exports.spreadErrors = spreadErrors;
+/*
+ * Internal helper functions
+ * -------------------------------------------------------------------------------------------------
+ */
 function findLast(futures, predicate, valueGetter, errorGetter, cb) {
     var timeOrdered = make(function (cb) {
         run(collectAllByTime, futures, cb);

@@ -6,6 +6,11 @@ import Result = require('./lib/result');
 import Callback = require('./lib/callback');
 import Promise = require('./lib/promise');
 
+/*
+ * Public interfaces
+ * -------------------------------------------------------------------------------------------------
+ */
+
 export interface BuilderFunction<E, V> {
   (callback: Callback<E, V>): any;
 }
@@ -26,12 +31,23 @@ export interface DOMEl {
   addEventListener: (key: string, listener: (v?: any) => any) => any;
 }
 
+/*
+ * Factory functions
+ * -------------------------------------------------------------------------------------------------
+ */
+
+/*
+ * Factory that gives a useful node-style callback to pass around
+ */
 export function make<E, V>(builder: BuilderFunction<E, V>): Future<E, V> {
   const deferred = new Deferred<E, V>();
   builder(deferred.cb);
   return new Future(deferred);
 }
 
+/*
+ * Factory that gives Promise-style fulfill() and reject() functions to call manually
+ */
 export function create<E, V>(builder: DoubledBuilderFn<E, V>): Future<E, V> {
   const deferred = new Deferred<E, V>();
 
@@ -44,16 +60,27 @@ export function create<E, V>(builder: DoubledBuilderFn<E, V>): Future<E, V> {
   return new Future(deferred);
 }
 
-export function fromPromise<E, V>(promise: Thenable<E, V, any, any>): Future<E, V> {
-  return make((cb: Callback<E, V>) => {
-    promise.then((val) => {
-      cb(null, val);
-    }, (err) => {
-      cb(err);
-    });
+/*
+ * Generate resolved futures from raw values
+ */
+export function value<E, V>(value: V): Future<E, V> {
+  return create((fulfill: (v: V) => any) => {
+    fulfill(value);
   });
 }
 
+/*
+ * Generate failed futures from raw error values
+ */
+export function error<E, V>(error: E): Future<E, V> {
+  return make((callback: Callback<E, any>) => {
+    callback(error);
+  });
+}
+
+/*
+ * Wrap loadable DOM elements, like images
+ */
 export function fromDOMElement<E>(el: DOMEl): Future<E, DOMEl> {
   return make((cb: Callback<E, DOMEl>) => {
     el.addEventListener('load', () => {
@@ -65,57 +92,15 @@ export function fromDOMElement<E>(el: DOMEl): Future<E, DOMEl> {
   });
 }
 
-export function toPromise<E, V>(future: Future<E, V>): Thenable<E, V, any, any> {
-  return new Promise(future);
-}
 
-export function value<E, V>(value: V): Future<E, V> {
-  return create((fulfill: (v: V) => any) => {
-    fulfill(value);
-  });
-}
+/*
+ * Promise interop and helpers
+ * -------------------------------------------------------------------------------------------------
+ */
 
-export function error<E, V>(error: E): Future<E, V> {
-  return make((callback: Callback<E, any>) => {
-    callback(error);
-  });
-}
-
-export function bindValue<E, V, OutV>(
-  future: Future<E, V>,
-  transform: Transform<V, OutV>
-): Future<E, OutV> {
-  return create((fulfill: (v: OutV) => any, reject: (e: E) => any) => {
-    then(future, (v: V) => { fulfill(transform(v)); }, reject);
-  });
-}
-
-export const bind = bindValue;
-export const transform = bind;
-export const transformValue = transform;
-
-export function bindError<E, V, OutE>(
-  future: Future<E, V>,
-  transform: Transform<E, OutE>
-): Future<OutE, V> {
-  return create((fulfill: (v: V) => any, reject: (e: OutE) => any) => {
-    then(future, fulfill, (e: E) => { reject(transform(e)); });
-  });
-}
-
-export const transformError = bindError;
-
-export function concatValues<E, V>(futures: Array<Future<E, V[]>>): Future<E, V[]> {
-  return transform(all(futures), flattenRaw);
-}
-
-export const concat = concatValues;
-
-export function concatErrors<E, V>(futures: Array<Future<E[], V>>): Future<E[], V> {
-  return transformError(none(futures), flattenRaw);
-}
-
-// TODO: use this more internally to reduce code duplication
+/*
+ * Emulates the .then function from Promises/A, but as a function rather than a method
+ */
 export function then<E, V>(
   future: Future<E, V>,
   cb: (v: V) => any,
@@ -131,76 +116,82 @@ export function then<E, V>(
   });
 }
 
-export function all<E,V>(futures: Array<Future<E, V>>): Future<E, V[]> {
-  return make((cb: Callback<E, V[]>) => {
-    run(collectValues, futures, cb);
+/*
+ * Turn a Promise into a Future
+ */
+export function fromPromise<E, V>(promise: Thenable<E, V, any, any>): Future<E, V> {
+  return make((cb: Callback<E, V>) => {
+    promise.then((val) => {
+      cb(null, val);
+    }, (err) => {
+      cb(err);
+    });
   });
 }
 
-export function none<E, V>(futures: Array<Future<E, V>>): Future<E[], V> {
-  return invert(make((cb: Callback<V, E[]>) => {
-    run(collectErrors, futures, cb);
-  }));
+/*
+ * Turn a Future into a Promise
+ */
+export function toPromise<E, V>(future: Future<E, V>): Thenable<E, V, any, any> {
+  return new Promise(future);
 }
 
-export function settled<E, V>(futures: Array<Future<E, V>>): Future<any, Array<Result<E, V>>> {
-  return make((cb: Callback<E, Array<Result<E, V>>>) => {
-    run(collectAll, futures, cb);
+
+/*
+ * Transformation functions
+ * -------------------------------------------------------------------------------------------------
+ */
+
+/*
+ * Transform values
+ */
+export function bindValue<E, V, OutV>(
+  future: Future<E, V>,
+  transform: Transform<V, OutV>
+): Future<E, OutV> {
+  return create((fulfill: (v: OutV) => any, reject: (e: E) => any) => {
+    then(future, (v: V) => { fulfill(transform(v)); }, reject);
   });
 }
 
-export const firstValue = none;
-export const first = firstValue;
+export const bind = bindValue;
+export const transform = bind;
+export const transformValue = transform;
 
-export function lastValue<E, V>(futures: Array<Future<E, V>>): Future<E[], V> {
-  return make((cb: Callback<E[], V>) => {
-    findLast(futures, hasValue, getValue, getError, cb);
+/*
+ * Transform errors
+ */
+export function bindError<E, V, OutE>(
+  future: Future<E, V>,
+  transform: Transform<E, OutE>
+): Future<OutE, V> {
+  return create((fulfill: (v: V) => any, reject: (e: OutE) => any) => {
+    then(future, fulfill, (e: E) => { reject(transform(e)); });
   });
 }
 
-export const last = lastValue;
+export const transformError = bindError;
 
-export const firstError = all;
-
-export function lastError<E, V>(futures: Array<Future<E, V>>): Future<E, V[]> {
-  return invert(make<V[], E>((cb: Callback<V[], E>) => {
-    findLast(futures, hasError, getError, getValue, cb);
-  }));
+/*
+ * Concat values
+ */
+export function concatValues<E, V>(futures: Array<Future<E, V[]>>): Future<E, V[]> {
+  return transform(all(futures), flattenRaw);
 }
 
-export function invert<E, V>(future: Future<E, V>): Future<V, E> {
-  return make(function(cb: Callback<V, E>) {
-    future.done(function(err, value) { cb(value, err); });
-  });
+export const concat = concatValues;
+
+/*
+ * Concat errors
+ */
+export function concatErrors<E, V>(futures: Array<Future<E[], V>>): Future<E[], V> {
+  return transformError(none(futures), flattenRaw);
 }
 
-export function spreadValues<E, V>(
-  future: Future<E, V[]>,
-  cb: (...values: V[]) => any
-): Future<E, V[]> {
-  return future.done((err, values) => {
-    if(!err) cb.apply(undefined, values);
-  });
-}
 
-export const spread = spreadValues;
-
-export function spreadAll<E, V>(
-  futures: Array<Future<E, V>>,
-  cb: (...values: V[]) => any
-): Future<E, V[]> {
-  return spreadValues(all(futures), cb);
-}
-
-export function spreadErrors<E, V>(
-  future: Future<E[], V>,
-  cb: (...errors: E[]) => any
-): Future<E[], V> {
-  return future.done((errors, val) => {
-    if(errors) cb.apply(undefined, errors);
-  });
-}
-
+/*
+ * Unwrap inner futures from the value position
+ */
 export function unwrapValue<E, V, OutE>(
   future: Future<E, Future<OutE, V>>
 ): Future<E|OutE, V> {
@@ -217,6 +208,9 @@ export function unwrapValue<E, V, OutE>(
 
 export const unwrap = unwrapValue;
 
+/*
+ * Unwrap inner futures from the error position
+ */
 export function unwrapError<E, V, OutV>(
   future: Future<Future<E, OutV>, V>
 ): Future<E, V|OutV> {
@@ -231,6 +225,9 @@ export function unwrapError<E, V, OutV>(
   });
 }
 
+/*
+ * Convenience function composing unwrap() and bind()
+ */
 export function unwrapBind<E, V, OutE, OutV>(
   future: Future<E, V>,
   transform: (v: V) => Future<OutE, OutV>
@@ -239,6 +236,129 @@ export function unwrapBind<E, V, OutE, OutV>(
 }
 
 export const unwrapTransform = unwrapBind;
+
+/*
+ * Invert a future
+ */
+export function invert<E, V>(future: Future<E, V>): Future<V, E> {
+  return make(function(cb: Callback<V, E>) {
+    future.done(function(err, value) { cb(value, err); });
+  });
+}
+
+
+/*
+ * Collection functions
+ * -------------------------------------------------------------------------------------------------
+ */
+
+/*
+ * Compose multiple futures into a single future with all of their values in an array
+ */
+export function all<E,V>(futures: Array<Future<E, V>>): Future<E, V[]> {
+  return make((cb: Callback<E, V[]>) => {
+    run(collectValues, futures, cb);
+  });
+}
+
+/*
+ * Compose multiple futures into a single future with all of their errors in an array
+ */
+export function none<E, V>(futures: Array<Future<E, V>>): Future<E[], V> {
+  return invert(make((cb: Callback<V, E[]>) => {
+    run(collectErrors, futures, cb);
+  }));
+}
+
+/*
+ * Compose multiple futures into a single future that contains all of their errors and values as
+ * Result tuples in an array
+ */
+export function settled<E, V>(futures: Array<Future<E, V>>): Future<any, Array<Result<E, V>>> {
+  return make((cb: Callback<E, Array<Result<E, V>>>) => {
+    run(collectAll, futures, cb);
+  });
+}
+
+/*
+ * Get the first value to resolve
+ */
+export const firstValue = none;
+export const first = firstValue;
+
+/*
+ * Get the last value to resolve
+ */
+export function lastValue<E, V>(futures: Array<Future<E, V>>): Future<E[], V> {
+  return make((cb: Callback<E[], V>) => {
+    findLast(futures, hasValue, getValue, getError, cb);
+  });
+}
+
+export const last = lastValue;
+
+/*
+ * Get the first error to occur
+ */
+export const firstError = all;
+
+
+/*
+ * Get the last error to occur
+ */
+export function lastError<E, V>(futures: Array<Future<E, V>>): Future<E, V[]> {
+  return invert(make<V[], E>((cb: Callback<V[], E>) => {
+    findLast(futures, hasError, getError, getValue, cb);
+  }));
+}
+
+
+/*
+ * Error and value spreading
+ * -------------------------------------------------------------------------------------------------
+ */
+
+/*
+ * Splat the values from a single future that resolves to an array of values into a callback
+ */
+export function spreadValues<E, V>(
+  future: Future<E, V[]>,
+  cb: (...values: V[]) => any
+): Future<E, V[]> {
+  return future.done((err, values) => {
+    if(!err) cb.apply(undefined, values);
+  });
+}
+
+export const spread = spreadValues;
+
+/*
+ * Splat the values from an array of futures into a callback
+ */
+export function spreadAll<E, V>(
+  futures: Array<Future<E, V>>,
+  cb: (...values: V[]) => any
+): Future<E, V[]> {
+  return spreadValues(all(futures), cb);
+}
+
+/*
+ * Splat the errors from a single future with an array of errors into a callback
+ */
+export function spreadErrors<E, V>(
+  future: Future<E[], V>,
+  cb: (...errors: E[]) => any
+): Future<E[], V> {
+  return future.done((errors, val) => {
+    if(errors) cb.apply(undefined, errors);
+  });
+}
+
+
+/*
+ * Internal helper functions
+ * -------------------------------------------------------------------------------------------------
+ */
 
 function findLast<E, V, Ce, Cv>(
   futures: Array<Future<E, V>>,
