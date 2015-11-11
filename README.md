@@ -305,7 +305,7 @@ var config = wate.transform(fileContents, function(text) {
 Similar to `wate.transformValue`, but transforms errors.
 
 
-### `wate.unwrapValue`
+#### `wate.unwrapValue`
 
 *alias: `wate.unwrap`*
 
