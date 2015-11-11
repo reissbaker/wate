@@ -362,7 +362,7 @@ const urlToLoad = wate.make((callback) => {
 });
 
 const networkFuture = wate.transform(urlToLoad, (url) => {
-  // For bind() calls, ordinarily we return a value. Here, however, we're
+  // For transform() calls, ordinarily we return a value. Here, however, we're
   // returning another future, since we need to make an async request to get
   // the data. That means "networkFuture" will actually resolve to... another
   // future.
