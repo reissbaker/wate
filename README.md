@@ -371,7 +371,7 @@ const networkFuture = wate.transform(urlToLoad, (url) => {
   });
 });
 
-// Hence, we unwrap it:
+// Hence, we unwrap the outer future to get at the inner future:
 const network = wate.unwrap(networkFuture);
 
 // In practice, you'd probably just use the unwrapTransform convenience
