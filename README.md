@@ -37,7 +37,7 @@ function readFile(filename, encoding) {
 Transform a value as soon as it's loaded:
 
 ```javascript
-const fs = xmlParser = require('xml2json');
+const xmlParser = require('xml2json');
 
 // Read the file using the fn we defined above
 const file = readFile('config.xml', 'utf-8');
