@@ -93,7 +93,7 @@ const config = loadJson('config.json');
 const overrides = loadJson('overrides.json');
 
 // Combine the parsed hashes
-const fullConfig = wate.transform([ config, overrides ], (configHash, overrideHash) => {
+const fullConfig = wate.transform([ config, overrides ], (confHash, overrideHash) => {
   return _.extend({}, configHash, overrideHash);
 });
 
