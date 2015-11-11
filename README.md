@@ -343,8 +343,9 @@ const network = wate.unwrap(wate.transform(urlToLoad, (url) => {
   return someWateEnabledNetworkCall(urlToLoad);
 }));
 
-// Or, using the unwrapTransform (also called unwrapBind) helper, which is just
-// a function that composes unwrap() and transform() into a single call:
+// Or, using the unwrapTransform (also called unwrapBind) convenience function,
+// which is just a function that composes unwrap() and transform() into a single
+// call:
 
 const network = wate.unwrapTransform(urlToLoad, (url) => {
   return someWateEnabledNetworkCall(urlToLoad);
