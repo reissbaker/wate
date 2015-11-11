@@ -69,6 +69,18 @@ export function toPromise<E, V>(future: Future<E, V>): Thenable<E, V, any, any> 
   return new Promise(future);
 }
 
+export function value<E, V>(value: V): Future<E, V> {
+  return create((fulfill: (v: V) => any) => {
+    fulfill(value);
+  });
+}
+
+export function error<E, V>(error: E): Future<E, V> {
+  return make((callback: Callback<E, any>) => {
+    callback(error);
+  });
+}
+
 export function bindValue<E, V, OutV>(
   future: Future<E, V>,
   transform: Transform<V, OutV>

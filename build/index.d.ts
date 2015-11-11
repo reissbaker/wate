@@ -21,6 +21,8 @@ export declare function create<E, V>(builder: DoubledBuilderFn<E, V>): Future<E,
 export declare function fromPromise<E, V>(promise: Thenable<E, V, any, any>): Future<E, V>;
 export declare function fromDOMElement<E>(el: DOMEl): Future<E, DOMEl>;
 export declare function toPromise<E, V>(future: Future<E, V>): Thenable<E, V, any, any>;
+export declare function value<E, V>(value: V): Future<E, V>;
+export declare function error<E, V>(error: E): Future<E, V>;
 export declare function bindValue<E, V, OutV>(future: Future<E, V>, transform: Transform<V, OutV>): Future<E, OutV>;
 export declare var bind: typeof bindValue;
 export declare var transform: typeof bindValue;

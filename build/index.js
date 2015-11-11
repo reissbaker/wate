@@ -44,6 +44,18 @@ function toPromise(future) {
     return new Promise(future);
 }
 exports.toPromise = toPromise;
+function value(value) {
+    return create(function (fulfill) {
+        fulfill(value);
+    });
+}
+exports.value = value;
+function error(error) {
+    return make(function (callback) {
+        callback(error);
+    });
+}
+exports.error = error;
 function bindValue(future, transform) {
     return create(function (fulfill, reject) {
         then(future, function (v) { fulfill(transform(v)); }, reject);
