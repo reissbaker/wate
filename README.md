@@ -14,10 +14,8 @@ JavaScript and TypeScript. Rather than using Promise-based libraries that
 swallow errors and lose stack traces in production, use Wate to manage
 callbacks inside of lightweight Futures.
 
-Wate interops with most Promise-based libraries, if you use them, by exposing
-functions that can convert to and from Promises and Futures. It integrates with
-typical error-first Node functions by virtue of being built explicitly for
-them.
+Wate also exposes functions that convert to and from Promises and Futures, so
+you can interop with Promise libraries if needed.
 
 
 Examples
