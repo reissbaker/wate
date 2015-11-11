@@ -18,6 +18,18 @@ Wate also exposes functions that convert to and from Promises and Futures, so
 you can interop with Promise libraries if needed.
 
 
+Install It
+================================================================================
+
+```
+npm install --save wate
+```
+
+If you're using TypeScript, the type definitions should Just Work and be
+imported into your project automatically thanks to the `"typings"` definition
+in the `package.json`.
+
+
 Examples
 ================================================================================
 
