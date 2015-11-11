@@ -143,8 +143,7 @@ fileFuture.catch((err) => {
 ```
 
 There isn't a corresponding method that only runs when the future succeeds,
-because if you're going to ignore errors you should at least be explicit about
-it.
+because if you're going to ignore errors you should be explicit about it.
 
 
 Composing Futures
