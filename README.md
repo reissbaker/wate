@@ -9,10 +9,10 @@
  \_____/\___/  \_______/   \___/   \_______/
 ```
 
-Wate is a small, fast, full-featured, easy-to-debug control flow library for
-JavaScript and TypeScript. Rather than using Promise-based libraries that
-swallow errors and lose stack traces in production, use Wate to manage
-callbacks inside of lightweight Futures.
+Wate is a small (2kb minified and gzipped), fast, full-featured, easy-to-debug
+control flow library for JavaScript and TypeScript. Rather than using
+Promise-based libraries that swallow errors and lose stack traces in
+production, use Wate to manage callbacks inside of lightweight Futures.
 
 Wate also exposes functions that convert to and from Promises and Futures, so
 you can interop with Promise libraries if needed.
