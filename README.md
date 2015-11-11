@@ -357,9 +357,7 @@ Similar to `wate.transformValue`, but transforms errors.
 Given a future that resolves to another future, unwraps the inner future.
 
 ```javascript
-const urlToLoad = wate.make((callback) => {
-  fs.readFile("url-to-load.txt", "utf-8", callback);
-});
+const urlToLoad = readFile("url-to-load.txt", "utf-8");
 
 const networkFuture = wate.transform(urlToLoad, (url) => {
   // For transform() calls, ordinarily we return a value. Here, however, we're
@@ -398,9 +396,8 @@ future that's returned as a value.
 Composes the `transformValue` and `unwrapValue` calls. For example:
 
 ```javascript
-const urlToLoad = wate.make((callback) => {
-  fs.readFile('url-to-load.txt', 'utf-8', callback);
-});
+const urlToLoad = readFile('url-to-load.txt', 'utf-8');
+
 const network = wate.unwrapTransform(urlToLoad, (url) => {
   return wate.make((callback) => {
     networkRequest(url, callback);
