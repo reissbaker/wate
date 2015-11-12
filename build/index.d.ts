@@ -39,9 +39,10 @@ export declare function concatErrors<E, V>(futures: Array<Future<any[], V>>): Fu
 export declare function unwrapValue<E, V, OutE>(future: Future<E, Future<OutE, V>>): Future<E | OutE, V>;
 export declare const unwrap: typeof unwrapValue;
 export declare function unwrapError<E, V, OutV>(future: Future<Future<E, OutV>, V>): Future<E, V | OutV>;
-export declare function unwrapBind<E, V, OutE, OutV>(future: Future<E, V>, transform: (v: V) => Future<OutE, OutV>): Future<E | OutE, OutV>;
-export declare function unwrapBind<OutV>(futures: Array<Future<any, any>>, transform: (...v: any[]) => Future<any, OutV>): Future<any, OutV>;
-export declare const unwrapTransform: typeof unwrapBind;
+export declare function flatten(future: Future<any, any>): Future<any, any>;
+export declare function flatBind<E, V, OutE, OutV>(future: Future<E, V>, transform: (v: V) => Future<OutE, OutV>): Future<E | OutE, OutV>;
+export declare function flatBind<OutV>(futures: Array<Future<any, any>>, transform: (...v: any[]) => Future<any, OutV>): Future<any, OutV>;
+export declare const flatTransform: typeof flatBind;
 export declare function invert<E, V>(future: Future<E, V>): Future<V, E>;
 export declare function all(futures: Array<Future<any, any>>): Future<any, any[]>;
 export declare function none(futures: Array<Future<any, any>>): Future<any[], any>;

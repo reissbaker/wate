@@ -206,14 +206,34 @@ function unwrapError(future) {
     });
 }
 exports.unwrapError = unwrapError;
-function unwrapBind(future, transform) {
-    if (future instanceof Array) {
-        return exports.unwrap(bindValues(future, transform));
-    }
-    return exports.unwrap(bindValue(future, transform));
+/*
+ * Flattens nested resolved futures
+ */
+function flatten(future) {
+    return make(function (callback) {
+        var descend = function (err, val) {
+            if (err) {
+                callback(err);
+                return;
+            }
+            if (!(val instanceof Future)) {
+                callback(null, val);
+                return;
+            }
+            val.done(descend);
+        };
+        future.done(descend);
+    });
 }
-exports.unwrapBind = unwrapBind;
-exports.unwrapTransform = unwrapBind;
+exports.flatten = flatten;
+function flatBind(future, transform) {
+    if (future instanceof Array) {
+        return flatten(bindValues(future.map(flatten), transform));
+    }
+    return flatten(bindValue(flatten(future), transform));
+}
+exports.flatBind = flatBind;
+exports.flatTransform = flatBind;
 /*
  * Invert a future
  */

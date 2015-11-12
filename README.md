@@ -431,9 +431,9 @@ const networkFuture = wate.transform(urlToLoad, (url) => {
 // Hence, we unwrap the outer future to get at the inner future:
 const network = wate.unwrap(networkFuture);
 
-// In practice, you'd probably just use the unwrapTransform convenience
+// In practice, you'd probably just use the flatTransform convenience
 // function rather than using both transform and unwrap, like so:
-const network = wate.unwrapTransform(urlToLoad, (url) => {
+const network = wate.flatTransform(urlToLoad, (url) => {
   return wate.make((callback) => {
     networkRequest(url, callback);
   });
@@ -447,16 +447,36 @@ Similar to `unwrapValue`, but unwraps a future returned as an error rather than 
 future that's returned as a value.
 
 
-#### `wate.unwrapTransform(future, transformFunction)`
+#### `wate.flatten(future)`
 
-*alias: `wate.unwrapBind`*
+Maximally un-nests the future's resolved value. If you have multiple nested
+futures, this will return a future that resolves to the innermost future's
+value (or error out if the futures error out), whereas `unwrap` only un-nests a
+single layer. For example:
 
-Composes the `transform` and `unwrapValue` calls. For example:
+```javascript
+const ultraNested = wate.value(wate.value(wate.value(10)));
+
+// The following resolves to 10
+const flattened = wate.flatten(ultraNested);
+
+// The following resolves to a future that resolves to 10
+const unwrapped = wate.unwrap(ultraNested);
+```
+
+
+#### `wate.flatTransform(future|futures, transformFunction)`
+
+*alias: `wate.flatBind`*
+
+Composes the `transform` and `flatten` calls. Runs flatten both on the input
+and the output, so you can pass it nested futures and also return nested
+futures, and have them transparently un-nest. For example:
 
 ```javascript
 const urlToLoad = readFile('url-to-load.txt', 'utf-8');
 
-const network = wate.unwrapTransform(urlToLoad, (url) => {
+const network = wate.flatTransform(urlToLoad, (url) => {
   return wate.make((callback) => {
     networkRequest(url, callback);
   });
@@ -473,7 +493,7 @@ Since it composes `transform`, it similarly also works with arrays of futures:
 const conf = wate.transform(readFile('config.json', 'utf-8'), JSON.parse);
 const overrides = wate.transform(readFile('overrides.json', 'utf-8'), JSON.parse);
 
-const pidfile = wate.unwrapTransform([conf, overrides], (confHash, overrideHash) => {
+const pidfile = wate.flatTransform([conf, overrides], (confHash, overrideHash) => {
   const conf = _.extend({}, confHash, overrideHash);
   return readFile(conf["pidfile"], "utf-8");
 });

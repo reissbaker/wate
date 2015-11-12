@@ -277,28 +277,53 @@ export function unwrapError<E, V, OutV>(
 }
 
 /*
- * Convenience function composing unwrap() and bind()
+ * Flattens nested resolved futures
  */
-export function unwrapBind<E, V, OutE, OutV>(
+
+export function flatten(future: Future<any, any>): Future<any, any> {
+  return make((callback) => {
+    const descend = (err: any, val: any) => {
+      if(err) {
+        callback(err);
+        return;
+      }
+
+      if(!(val instanceof Future)) {
+        callback(null, val);
+        return;
+      }
+
+      val.done(descend);
+    };
+
+    future.done(descend);
+  });
+}
+
+/*
+ * Convenience function composing flatten() and bind()
+ */
+export function flatBind<E, V, OutE, OutV>(
   future: Future<E, V>,
   transform: (v: V) => Future<OutE, OutV>
 ): Future<E|OutE, OutV>;
-export function unwrapBind<OutV>(
+
+export function flatBind<OutV>(
   futures: Array<Future<any, any>>,
   transform: (...v: any[]) => Future<any, OutV>
 ): Future<any, OutV>;
 
-export function unwrapBind<OutV>(
+export function flatBind<OutV>(
   future: any,
   transform: ((v: any) => any)|((...vs: any[]) => any)
 ): Future<any, OutV> {
   if(future instanceof Array) {
-    return unwrap(bindValues(future, transform));
+    return flatten(bindValues(future.map(flatten), transform));
   }
-  return unwrap(bindValue(future, transform));
+  return flatten(bindValue(flatten(future), transform));
 }
 
-export const unwrapTransform = unwrapBind;
+export const flatTransform = flatBind;
 
 /*
  * Invert a future

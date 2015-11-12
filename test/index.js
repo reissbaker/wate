@@ -293,15 +293,42 @@ describe("unwrapError", () => {
   });
 });
 
-describe("unwrapTransform", () => {
-  it("transforms a future and unwraps its result", (done) => {
+describe("flatTransform", () => {
+  it("transforms a future and flattens its result", (done) => {
     const a = wate.value(10);
-    const transformed = wate.unwrapTransform(a, (val) => {
+    const transformed = wate.flatTransform(a, (val) => {
       return wate.value(val + 10);
     });
+
     transformed.done((err, val) => {
       expect(err).to.equal(null);
       expect(val).to.equal(20);
+      done();
+    });
+  });
+
+  it("works with arrays of futures", (done) => {
+    const a = wate.value(10);
+    const b = wate.value(20);
+    const transformed = wate.flatTransform([ a, b, ], (aVal, bVal) => {
+      return wate.value(aVal + bVal);
+    });
+    transformed.done((err, val) => {
+      expect(err).to.equal(null);
+      expect(val).to.equal(30);
+      done();
+    });
+  });
+
+  it("also flattens the input futures", (done) => {
+    const a = wate.value(wate.value(10));
+    const b = wate.value(wate.value(wate.value(50)));
+    const transformed = wate.flatTransform([ a, b ], (aVal, bVal) => {
+      return aVal + bVal;
+    });
+    transformed.done((err, val) => {
+      expect(err).to.equal(null);
+      expect(val).to.equal(60);
       done();
     });
   });
